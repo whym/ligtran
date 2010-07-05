@@ -1,0 +1,101 @@
+<project name="ligature" default="compile" basedir=".">
+  <description>
+    Ligature encoder &amp; decoder
+  </description>
+  <available property="junit.present"     classname="junit.runner.Version" />
+  <tstamp prefix="my">
+    <format property="TODAY" pattern="yyyy-MM-dd hh:mm" locale="en,UK"/>
+  </tstamp>
+  <property file="build.properties" />
+  <property file="build.default.properties" />
+
+  <target name="init">
+    <echo level="info" message="junit.present=${junit.present}" />
+    <tstamp/>
+    <mkdir dir="${build}" />
+  </target>
+
+  <target name="compile" depends="init"
+          description="compile the source">
+    <depend srcdir="${src}" destdir="${build}" cache="${build}/dependencycache" closure="no">
+      <include name="**/ligature/*.java" />
+    </depend>
+    <javac srcdir="${src}" destdir="${build}" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
+      <classpath>
+      </classpath>
+      <compilerarg value="-Xlint:unchecked" />
+      <include name="**/ligature/*.java"/>
+    </javac>
+  </target>
+  <target name="compile-test" depends="compile"
+          description="compile the source of tests">
+    <depend srcdir="${src}" destdir="${build}" cache="${build}/dependencycache" closure="no">
+      <include name="test/**/Test*.java"/>
+    </depend>
+    <javac srcdir="${src}" destdir="${build}" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
+      <classpath>
+      </classpath>
+      <compilerarg value="-Xlint:unchecked" />
+      <include name="test/**/Test*.java"/>
+    </javac>
+  </target>
+
+  <target name="dist" depends="compile"
+          description="generate the distribution">
+    <mkdir dir="${dist}" />
+    <jar jarfile="${dist}/${ant.project.name}.jar">
+      <fileset dir="${build}" includes="com/" />
+      <manifest>
+        <!-- <attribute name="Main-Class" value="com.github.whym.ligature.FrontEnd"/> -->
+        <attribute name="Implementation-Version" value="${my.TODAY}" />
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="test" if="junit.present" depends="compile, compile-test"
+          description="run unit tests">
+    <mkdir dir="${reports.tests}" />
+    <junit printsummary="on" showoutput="yes" fork="yes" haltonfailure="no">
+      <formatter type="xml" />
+      <assertions>
+        <enable package="com.github.whym.ligature" />
+      </assertions>
+      <classpath>
+        <pathelement location="${build}" />
+      </classpath>
+      <formatter type="plain" />
+      <batchtest fork="yes" todir="${reports.tests}">
+        <fileset dir="${src}">
+          <include name="test/**/Test*.java" />
+        </fileset>
+      </batchtest>
+    </junit>
+    <junitreport todir="${reports.tests}">
+      <fileset dir="${reports.tests}">
+        <include name="TEST-*.xml"/>
+      </fileset>
+      <report format="frames" todir="${reports.tests}/html"/>
+    </junitreport>
+  </target>
+
+  <target name="javadoc" depends="init">
+    <javadoc packagenames="com.github.whym.ligature.*"
+             sourcepath="${src}"
+             destdir="${build}/docs"
+             use="true"
+             linksource="true"
+             windowtitle="Ligature API Documentation"
+             doctitle="Ligature API Documentation"
+             bottom="Copyright &amp;copy; 2009 Whym.  All Rights Reserved.">
+      <classpath>
+      </classpath>
+    </javadoc>
+  </target>
+
+  <target name="clean"
+          description="clean up">
+    <delete dir="${build}" />
+    <delete dir="${dist}" />
+    <delete dir="${reports.tests}" />
+  </target>
+</project>
