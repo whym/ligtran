@@ -5,9 +5,10 @@ import java.awt.image.*;
 import java.awt.geom.*;
 import javax.swing.*;
 
-public class UnigramMetrics implements Metrics {
-  private byte[][] pixels;
+public class UnigramMetrics extends AbstractMetrics {
+  private char ch;
   public UnigramMetrics(char c1, int size) {
+    this.ch = c1;
     final BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_BYTE_GRAY);
     Graphics2D g = bi.createGraphics();
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
@@ -31,23 +32,8 @@ public class UnigramMetrics implements Metrics {
       }
     }
   }
-  
-  @Override public byte[][] fillArray(byte[][] array) {
-    for (int a = 0; a < this.pixels.length; a++) {
-      System.arraycopy(this.pixels[a], 0, array[a], 0, this.pixels[a].length);
-		}
-    return array;
-  }
-
-  @Override public String toString() {
-    StringBuffer buff = new StringBuffer();
-    for ( int i = 0; i < this.pixels.length; ++i ) {
-      for ( int j = 0; j < this.pixels[i].length; ++j ) {
-        buff.append(this.pixels[i][j] != 0 ? this.pixels[i][j] > 0 ? '+' : '#' : ' ');
-      }
-      buff.append("\n");
-    }
-    return buff.toString();
+  @Override public CharSequence getSequence() {
+    return "" + ch;
   }
 
   public static void main(String[] args) {

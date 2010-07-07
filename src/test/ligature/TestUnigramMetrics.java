@@ -5,7 +5,7 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 public class TestUnigramMetrics {
-  @Test public void test0() {
+  @Test public void testUnigramMetrics() {
     Metrics m = new UnigramMetrics('-', 3);
     byte[][] expect = new byte[][]{
       {0,  0, 0},
@@ -15,5 +15,6 @@ public class TestUnigramMetrics {
     byte[][] actual = new byte[3][3];
     m.fillArray(actual);
     assertArrayEquals(expect, actual);
+    assertEquals(new RawMetrics(expect), m);
   }
 }

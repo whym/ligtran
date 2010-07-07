@@ -18,12 +18,14 @@
   <target name="compile" depends="init"
           description="compile the source">
     <depend srcdir="${src}" destdir="${build}" cache="${build}/dependencycache" closure="no">
+      <exclude name="test/**/Test*.java"/>
       <include name="**/ligature/*.java" />
     </depend>
     <javac srcdir="${src}" destdir="${build}" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
       <classpath>
       </classpath>
       <compilerarg value="-Xlint:unchecked" />
+      <exclude name="test/**/Test*.java"/>
       <include name="**/ligature/*.java"/>
     </javac>
   </target>
