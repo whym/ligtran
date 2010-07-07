@@ -8,29 +8,27 @@ public class TestClustering {
   @Test public void testMetricsClusterer() {
     List<Metrics> ls = new ArrayList<Metrics>();
     ls.add(new RawMetrics(new byte[][]{
-          { 0, 0, 0, 0 },
-          { 0, 0, 0, 0 },
-          { 0, 1, 1, 0 },
-          { 0, 1, 0, 0 }
+          { 1, 1, 1, 1 },
+          { 1, 0, 1, 1 },
+          { 1, 0, 0, 1 },
+          { 1, 0, 0, 1 }
         }));
     ls.add(new RawMetrics(new byte[][]{
-          { 0, 0, 0, 0 },
-          { 0, 0, 0, 0 },
-          { 0, 0, 0, 0 },
-          { 0, 1, 0, 0 }
+          { 1, 1, 1, 1 },
+          { 1, 1, 1, 1 },
+          { 1, 1, 1, 1 },
+          { 1, 0, 1, 1 }
         }));
     ls.add(new RawMetrics(new byte[][]{
-          { 0, 0, 0, 0 },
-          { 0, 0, 0, 0 },
-          { 0, 1, 1, 0 },
-          { 0, 1, 0, 0 }
+          { 1, 1, 1, 1 },
+          { 1, 0, 0, 1 },
+          { 1, 0, 0, 1 },
+          { 1, 0, 0, 1 }
         }));
-    assertEquals(new HashSet<Set<Metrics>>
-                 (Arrays.<Set<Metrics>>asList(new Set[]{
-                     new HashSet<Metrics>(Arrays.<Metrics>asList(new Metrics[]{ls.get(1)})),
-                     new HashSet<Metrics>(Arrays.<Metrics>asList(new Metrics[]{ls.get(0), ls.get(2)})),
-                 }                   
-                   )), new MetricsClusterer(ls, 2, 0.01).getClusters());
+    Set<Set<Metrics>> expect = new HashSet<Set<Metrics>>();
+    expect.add(new HashSet<Metrics>(Arrays.<Metrics>asList(new Metrics[]{ls.get(1)})));
+    expect.add(new HashSet<Metrics>(Arrays.<Metrics>asList(new Metrics[]{ls.get(0), ls.get(2)})));
+    assertEquals(expect, new MetricsClusterer(ls, 2, 0.01).getClusters());
   }
   @Test public void testBottomUpClustering() {
     int[][] items = new int[][]{

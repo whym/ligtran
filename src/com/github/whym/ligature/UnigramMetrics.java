@@ -6,13 +6,24 @@ import java.awt.geom.*;
 import javax.swing.*;
 
 public class UnigramMetrics extends AbstractMetrics {
+  private static BufferedImage bi;
+  private static Graphics2D g;
   private char ch;
   public UnigramMetrics(char c1, int size) {
+    this(c1, size, false);
+  }
+  public UnigramMetrics(char c1, int size, boolean antialias) {
     this.ch = c1;
-    final BufferedImage bi = new BufferedImage(size, size, BufferedImage.TYPE_BYTE_GRAY);
-    Graphics2D g = bi.createGraphics();
-    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                       RenderingHints.VALUE_ANTIALIAS_ON);
+    if (bi == null || g == null || bi.getWidth() != size || bi.getHeight() != size ) {
+      bi = new BufferedImage(size, size, BufferedImage.TYPE_BYTE_GRAY);
+      g = bi.createGraphics();
+      if ( antialias ) {
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                           RenderingHints.VALUE_ANTIALIAS_ON);
+      }
+    }
+    g.setColor(Color.BLACK);
+    g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
     g.setColor(Color.WHITE);
     int fsize = size;
     String str = "" + c1;
