@@ -25,28 +25,10 @@ public class MetricsClusterer {
     return ret;
   }
 
-  private static int getPropertyInt(String name, int v) {
-    String s = System.getProperty(name);
-    if ( s != null ) {
-      return Integer.parseInt(s);
-    } else {
-      return v;
-    }
-  }
-
-  private static double getPropertyDouble(String name, double v) {
-    String s = System.getProperty(name);
-    if ( s != null ) {
-      return Double.parseDouble(s);
-    } else {
-      return v;
-    }
-  }
-
   public static void main(String[] args) throws IOException {
-    int size = getPropertyInt("size", 100);
-    int grid = getPropertyInt("grid", 4);
-    double threshold = getPropertyDouble("threshold", 0.001);
+    int size = Util.getPropertyInt("size", 100);
+    int grid = Util.getPropertyInt("grid", 4);
+    double threshold = Util.getPropertyDouble("threshold", 0.001);
 
     {
       byte[][] a = new byte[grid][grid];

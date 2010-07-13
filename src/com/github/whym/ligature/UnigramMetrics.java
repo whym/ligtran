@@ -5,15 +5,20 @@ import java.awt.image.*;
 import java.awt.geom.*;
 import javax.swing.*;
 
+
+//TODO: rename
 public class UnigramMetrics extends AbstractMetrics {
   private static BufferedImage bi;
   private static Graphics2D g;
-  private char ch;
+  private CharSequence ch;
   public UnigramMetrics(char c1, int size) {
     this(c1, size, false);
   }
   public UnigramMetrics(char c1, int size, boolean antialias) {
-    this.ch = c1;
+    this(""+c1, size, antialias);
+  }
+  public UnigramMetrics(CharSequence s, int size, boolean antialias) {
+    this.ch = s;
     if (bi == null || g == null || bi.getWidth() != size || bi.getHeight() != size ) {
       bi = new BufferedImage(size, size, BufferedImage.TYPE_BYTE_GRAY);
       g = bi.createGraphics();
@@ -26,7 +31,7 @@ public class UnigramMetrics extends AbstractMetrics {
     g.fillRect(0, 0, bi.getWidth(), bi.getHeight());
     g.setColor(Color.WHITE);
     int fsize = size;
-    String str = "" + c1;
+    String str = s.toString();
     while (true) {
       g.setFont(new Font("serif", Font.PLAIN, fsize));
       if (g.getFontMetrics().getMaxDescent() + g.getFontMetrics().getMaxAscent() <= size
@@ -44,7 +49,7 @@ public class UnigramMetrics extends AbstractMetrics {
     }
   }
   @Override public CharSequence getSequence() {
-    return "" + ch;
+    return this.ch;
   }
 
   public static void main(String[] args) {

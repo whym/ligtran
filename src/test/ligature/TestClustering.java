@@ -5,6 +5,31 @@ import java.util.*;
 import static org.junit.Assert.*;
 
 public class TestClustering {
+  @Test public void testNeighbourFinder() {
+    List<Metrics> ls = new ArrayList<Metrics>();
+    List<Metrics> ls2 = new ArrayList<Metrics>();
+    ls.add(new RawMetrics(new byte[][]{
+          { 1, 1, 1, 1 },
+          { 1, 0, 1, 1 },
+          { 1, 0, 0, 1 },
+          { 1, 0, 0, 1 }
+        }));
+    ls.add(new RawMetrics(new byte[][]{
+          { 1, 1, 1, 1 },
+          { 1, 1, 1, 1 },
+          { 1, 1, 1, 1 },
+          { 1, 0, 1, 1 }
+        }));
+    ls2.add(new RawMetrics(new byte[][]{
+          { 1, 1, 1, 1 },
+          { 1, 0, 0, 1 },
+          { 1, 0, 0, 1 },
+          { 1, 0, 0, 1 }
+        }));
+    Map<Metrics,Metrics> expect = new HashMap<Metrics,Metrics>();
+    expect.put(ls.get(0), ls2.get(0));
+    assertEquals(expect, new NeighbourFinder(ls, ls2, 2, 0.3).getMappings());
+  }
   @Test public void testMetricsClusterer() {
     List<Metrics> ls = new ArrayList<Metrics>();
     ls.add(new RawMetrics(new byte[][]{
