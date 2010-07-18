@@ -27,6 +27,7 @@
       <compilerarg value="-Xlint:unchecked" />
       <exclude name="test/**/Test*.java"/>
       <include name="**/ligature/*.java"/>
+      <include name="**/ligature/servlet/*.java"/>
     </javac>
   </target>
   <target name="compile-test" depends="compile"
@@ -52,6 +53,15 @@
         <attribute name="Implementation-Version" value="${my.TODAY}" />
       </manifest>
     </jar>
+  </target>
+
+  <target name="war" depends="compile">
+    <copy todir="${war}/WEB-INF/classes/com">
+      <fileset dir="${build}/com" />
+    </copy>
+    <copy todir="${war}/WEB-INF/lib">
+      <fileset dir="lib" />
+    </copy>
   </target>
 
   <target name="test" if="junit.present" depends="compile, compile-test"
