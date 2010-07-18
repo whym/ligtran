@@ -3,10 +3,12 @@
 <script type="text/javascript" src="http://www.mochikit.com/packed/MochiKit/MochiKit.js"></script>
 <script type="text/javascript">
 function convert(path, from, to) {
-  return loadJSONDoc(path, {'str': $(from).value}).addCallback(function(ret){
-   $(to).value = ret.return;
+  var old = $(to).value;
+  loadJSONDoc(path, {'str': $(from).value}).addCallback(function(ret){
+   $(to).value = ret.return + $(to).value.slice(old.length);
   });
-};
+}
 </script>
 <textarea id="edit" onkeyup="convert('ligature', 'edit', 'edit')"></textarea>
+
 </html>
