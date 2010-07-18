@@ -39,12 +39,11 @@ public class LigatureServlet extends HttpServlet {
     Matcher m = this.patt.matcher(str);
     while ( m.find() ) {
       String rep = this.maps.get(m.group());
-      System.err.println(m.group() + rep);//!
       if ( rep != null ) {
         m.appendReplacement(buff, rep);
       }
     }
     m.appendTail(buff);
-    writer.printf("{return: \"%s\"}", buff); // TODO: escape using StringEscapeUtils
+    writer.printf("{\"return\": \"%s\"}", buff); // TODO: escape using StringEscapeUtils
   }
 }
