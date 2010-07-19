@@ -6,11 +6,15 @@ import java.awt.Font;
 public class NeighbourFinder {
   BagOfVisualWords bags;
   Map<Set<Metrics>, Double> map;
-  public NeighbourFinder(List<Metrics> from_, List<Metrics> to_, int g, double threshold) {
+  public NeighbourFinder(List<Metrics> from_, List<Metrics> to_, int g, double threshold, int cutoff) {
     List<Metrics> coll = new ArrayList<Metrics>();
     coll.addAll(from_);
     coll.addAll(to_);
-    int[][] bags = new BagOfVisualWords(coll, g).getBags();
+    BagOfVisualWords bag = new BagOfVisualWords(coll, g, true, cutoff);
+    System.err.println(bag.getBags()[0].length);//!
+    bag.cutoff(cutoff);
+    System.err.println(bag.getBags()[0].length);//!
+    int[][] bags = bag.getBags();
     int[][] from = new int[from_.size()][];
     System.arraycopy(bags, 0, from, 0, from.length);
     int[][] to   = new int[to_.size()][];
@@ -81,8 +85,9 @@ public class NeighbourFinder {
   public static void main(String[] args) throws java.awt.FontFormatException, IOException {
     int size = Util.getPropertyInt("size", 100);
     int grid = Util.getPropertyInt("grid", 4);
+    int cutoff = Util.getPropertyInt("cutoff", 4);
     double threshold = Util.getPropertyDouble("threshold", 0.001);
-    double min = Util.getPropertyDouble("min", 0.007);
+    double min = Util.getPropertyDouble("min", 0.01);
     double max1 = Util.getPropertyDouble("max1", 0.7);
     double max2 = Util.getPropertyDouble("max2", 0.5);
     Font font = new Font("serif", Font.PLAIN, size);
@@ -90,10 +95,10 @@ public class NeighbourFinder {
     if ( fpath != null ) {
       font = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(fpath));
     }
-    NeighbourFinder finder = new NeighbourFinder
-      (readMetrics(new FileReader(args[0]), size, false, font, min, max1),
-       readMetrics(new FileReader(args[1]), size, false, font, min, max2),
-       grid, threshold);
+    List<Metrics> ls1 = readMetrics(new FileReader(args[0]), size, false, font, min, max1);
+    List<Metrics> ls2 = readMetrics(new FileReader(args[1]), size, false, font, min, max2);
+    System.err.printf("%s: %d, %s: %d\n", args[0], ls1.size(), args[1], ls2.size());
+    NeighbourFinder finder = new NeighbourFinder(ls1, ls2, grid, threshold, cutoff);
     for ( Set<Metrics> s: finder.getMappings() ) {
       for ( Metrics m: s ) {
         System.out.print(m.getSequence());

@@ -9,9 +9,8 @@ import static java.text.Normalizer.Form.*;
 public class ListLigatures {
   public static void main(String[] args) throws Exception {
     int size = Util.getPropertyInt("size", 100);
-    int grid = Util.getPropertyInt("grid", 4);
     double min = Util.getPropertyDouble("min", 0.01);
-    double max = Util.getPropertyDouble("max", 0.7);
+    double max = Util.getPropertyDouble("max", 0.9);
     Font font = new Font("serif", Font.PLAIN, size);
     String fpath = Util.getProperty("font", null);
     if ( fpath != null ) {
