@@ -1,6 +1,14 @@
 package com.github.whym.ligature;
 
 public class Util {
+  public static String getProperty(String name, String v) {
+    String s = System.getProperty(name);
+    if ( s != null ) {
+      return s;
+    } else {
+      return v;
+    }
+  }
   public static int getPropertyInt(String name, int v) {
     String s = System.getProperty(name);
     if ( s != null ) {

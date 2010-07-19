@@ -26,8 +26,8 @@ public class TestClustering {
           { 1, 0, 0, 1 },
           { 1, 0, 0, 1 }
         }));
-    Map<Metrics,Metrics> expect = new HashMap<Metrics,Metrics>();
-    expect.put(ls.get(0), ls2.get(0));
+    List<Set<Metrics>> expect = new ArrayList<Set<Metrics>>();
+    expect.add(new HashSet<Metrics>(Arrays.<Metrics>asList(new Metrics[]{ls.get(0), ls2.get(0)})));
     assertEquals(expect, new NeighbourFinder(ls, ls2, 2, 0.3).getMappings());
   }
   @Test public void testMetricsClusterer() {
