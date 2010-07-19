@@ -4,11 +4,36 @@
 <script type="text/javascript">
 function convert(path, from, to) {
   var old = $(to).value;
-  loadJSONDoc(path, {'str': $(from).value}).addCallback(function(ret){
+  return loadJSONDoc(path, {'str': $(from).value}).addCallback(function(ret){
    $(to).value = ret.return + $(to).value.slice(old.length);
   });
 }
+function copy_all(path){
+  var text_val=$(path);
+  text_val.focus();
+  text_val.select();
+  if (!document.all) return; // IE only
+  r = text_val.createTextRange();
+  r.execCommand('copy');
+}
+function count(path, pathc) {
+  var s = $(path).value;
+  $(pathc).value = s.length;
+}
 </script>
-<textarea id="edit" onkeyup="convert('ligature', 'edit', 'edit')"></textarea>
+</script>
+<style type="text/css">
+h1 { text-align: center; }
+body { width: 40em; margin: auto; }
+textarea{ width: 90%; height: 6em; font-size: 150%; }
+input{ width: 10%; float: right; font-size: 200%; }
+</style>
+
+<h1><img src="http://www.twitlogo.com/c/b7bb40c3c1ba67cd92899e298f6469f4.png" title="ligtran"/></h1>
+
+<input id="editc" type="text" readonly="true"/>
+<textarea id="edit" onkeyup="convert('ligature', 'edit', 'result').addCallback(function(){count('edit', 'editc'); count('result', 'resultc');});"></textarea><br/>
+<input id="resultc" type="text" readonly="true"/>
+<textarea id="result" readonly="true" onclick="copy_all('result')"></textarea>
 
 </html>
