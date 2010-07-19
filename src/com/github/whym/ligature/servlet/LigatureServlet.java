@@ -5,6 +5,7 @@ import java.util.*;
 import java.util.regex.*;
 import java.text.*;
 import javax.servlet.http.*;
+import javax.servlet.*;
 import org.apache.commons.lang.StringEscapeUtils;
 
 public class LigatureServlet extends HttpServlet {
@@ -19,26 +20,46 @@ public class LigatureServlet extends HttpServlet {
     return buff.toString();
   }
 
-  public LigatureServlet() throws IOException {
+  public LigatureServlet() {
     this.maps = new HashMap<String,String>();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("ligatures.txt"), "UTF-8"));
-    StringBuffer buff = new StringBuffer("(");
-    String line;
-    while ( (line = reader.readLine()) != null ) {
-      String[] s = line.split("\\s+");
-      if ( s.length >= 2 ) {
-        if ( this.maps.get(s[0]) == null ) {
-          this.maps.put(s[0],s[1]);
-          if ( buff.length() > 1 ) {
-            buff.append("|");
+  }
+  @Override public void init(ServletConfig config) throws ServletException {
+    super.init(config);
+    boolean reversed = false;
+    if ( config.getInitParameter("reverse") != null ) {
+      reversed = true;
+    }
+    try {
+      BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("ligatures.txt"), "UTF-8"));
+      StringBuffer buff = new StringBuffer("(");
+      String line;
+      while ( (line = reader.readLine()) != null ) {
+        String[] s = line.split("\\s+");
+        String k,v;
+        if ( s.length >= 2 ) {
+          if ( reversed ) {
+            k = s[1];
+            v = s[0];
+          } else {
+            k = s[0];
+            v = s[1];
           }
-          buff.append(unicode_escape(s[0]));
+          if ( this.maps.get(k) == null ) {
+            this.maps.put(k, v);
+            if ( buff.length() > 1 ) {
+              buff.append("|");
+            }
+            buff.append(unicode_escape(k));
+          }
         }
       }
+      buff.append(")");
+      //System.err.println(buff);//!
+      this.patt = Pattern.compile(buff.toString());
+    } catch (IOException e) {
+      e.printStackTrace();
+      return;
     }
-    buff.append(")");
-    //System.err.println(buff);//!
-    this.patt = Pattern.compile(buff.toString());
   }
 
   public void doGet(HttpServletRequest req, HttpServletResponse resp)

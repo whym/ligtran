@@ -20,20 +20,32 @@ function count(path, pathc) {
   var s = $(path).value;
   $(pathc).value = s.length;
 }
+var current = 'ligature';
+function set(x) {
+  current = x;
+}
+function get_servlet() { return current; }
 </script>
 </script>
 <style type="text/css">
 h1 { text-align: center; }
 body { width: 40em; margin: auto; }
 textarea{ width: 90%; height: 6em; font-size: 150%; }
-input{ width: 10%; float: right; font-size: 200%; }
+.counter{ border: none; width: 10%; float: right; font-size: 200%; text-align: right; }
 </style>
 
 <h1><img src="http://www.twitlogo.com/c/b7bb40c3c1ba67cd92899e298f6469f4.png" title="ligtran"/></h1>
 
-<input id="editc" type="text" readonly="true"/>
-<textarea id="edit" onkeyup="convert('ligature', 'edit', 'result').addCallback(function(){count('edit', 'editc'); count('result', 'resultc');});"></textarea><br/>
-<input id="resultc" type="text" readonly="true"/>
+<form>
+  <input type="radio" name="inst" id="short" checked="true" onclick="set('ligature')"/>
+<label for="short">短く</label>
+  <input type="radio" name="inst" id="long" onclick="set('ligature/reverse')"/>
+  <label for="long">長く</label>
+</form>
+
+<input class="counter" id="editc" type="text" readonly="true"/>
+<textarea id="edit" onkeyup="convert(get_servlet(), 'edit', 'result').addCallback(function(){count('edit', 'editc'); count('result', 'resultc');});"></textarea><br/>
+<input class="counter" id="resultc" type="text" readonly="true"/>
 <textarea id="result" readonly="true" onclick="copy_all('result')"></textarea>
 
 </html>
