@@ -1,11 +1,20 @@
-<html>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<meta http-equiv="content-style-type" content="text/css" />
+<meta http-equiv="content-script-type" content="text/javascript" />
 <title>ligtran</title>
+
 <script type="text/javascript" src="http://www.mochikit.com/packed/MochiKit/MochiKit.js"></script>
 <script type="text/javascript">
-function convert(path, from, to) {
+function convert(path, from, to, fromc, toc) {
   var old = $(to).value;
-  return loadJSONDoc(path, {'str': $(from).value}).addCallback(function(ret){
-   $(to).value = ret.return + $(to).value.slice(old.length);
+  loadJSONDoc(path, {'str': $(from).value}).addCallback(function(ret){
+    $(to).value = ret['result'] + $(to).value.slice(old.length);
+  }).addCallback(function(){
+    count(from, fromc); count(to, toc);
   });
 }
 function copy_all(path){
@@ -18,7 +27,7 @@ function copy_all(path){
 }
 function count(path, pathc) {
   var s = $(path).value;
-  $(pathc).value = s.length;
+  $(pathc).innerHTML = s.length;
 }
 var current = 'ligature';
 function set(x) {
@@ -26,26 +35,64 @@ function set(x) {
 }
 function get_servlet() { return current; }
 </script>
-</script>
 <style type="text/css">
 h1 { text-align: center; }
 body { width: 40em; margin: auto; }
-textarea{ width: 90%; height: 6em; font-size: 150%; }
-.counter{ border: none; width: 10%; float: right; font-size: 200%; text-align: right; }
+textarea { width: 90%; height: 6em; font-size: 150%; }
+.counter { font-size: 200%; text-align: right; vertical-align: top; }
+.description { font-size: 90%; position: relative; left: 10%; }
 </style>
+</head>
+<body>
+<h1><img src="http://www.twitlogo.com/c/b7bb40c3c1ba67cd92899e298f6469f4.png" alt="ligtran" /></h1>
 
-<h1><img src="http://www.twitlogo.com/c/b7bb40c3c1ba67cd92899e298f6469f4.png" title="ligtran"/></h1>
-
-<form>
-  <input type="radio" name="inst" id="short" checked="true" onclick="set('ligature')"/>
+<form action="">
+  <input type="radio" name="ligmode" id="short" checked="checked" onclick="set('ligature'); $('edit').onkeyup();" onkeypress="this.onclick();" />
 <label for="short">短く</label>
-  <input type="radio" name="inst" id="long" onclick="set('ligature/reverse')"/>
+  <input type="radio" name="ligmode" id="long" onclick="set('ligature/reverse'); $('edit').onkeyup();" onkeypress="this.onclick();" />
   <label for="long">長く</label>
 </form>
 
-<input class="counter" id="editc" type="text" readonly="true"/>
-<textarea id="edit" onkeyup="convert(get_servlet(), 'edit', 'result').addCallback(function(){count('edit', 'editc'); count('result', 'resultc');});"></textarea><br/>
-<input class="counter" id="resultc" type="text" readonly="true"/>
-<textarea id="result" readonly="true" onclick="copy_all('result')"></textarea>
+<div class="box">
+<textarea rows="6" cols="60" id="edit" onkeyup="convert(get_servlet(), 'edit', 'result', 'editc', 'resultc');" onmouseup="this.onkeyup();" ></textarea>
+<label class="counter" id="editc" for="edit">0</label>
+</div>
 
+<div class="box">
+<textarea rows="6" cols="60" id="result" readonly="readonly" onfocus="copy_all('result')"></textarea>
+<label class="counter" id="resultc" for="edit">0</label>
+</div>
+
+<pre class="description">
+
+ これは文字と文字をくっつけたり離したりすることで、テキストを短くしたり長くするウェブサービスです。
+ たとえば「バイドゥ株式会社」を長くすると「バイドゥ木朱式会ネ土」などとなります。
+ 使い方は下記のとおりです。
+
+ 1. 「短く」か「長く」を選びます。
+ 2. 一つ目の入力欄にテキストを入力します。
+ 3. 二つ目の欄に変換された結果が表示されます。
+
+ 変換の方法としては、標準的な合字の組(*,**)と、その他の見た目に類似性のある文字列の組(***)とを用いています。
+
+ (*) Unicode Normalization Forms
+     http://unicode.org/reports/tr15/
+ (**) 漢字構造情報データベース
+      http://www.kanji.zinbun.kyoto-u.ac.jp/projects/chise/ids/index.html.ja.iso-2022-jp
+      fonts.jp 漢字分解器
+      http://www.fonts.jp/archives/search/
+ (***) 見た目の類似性による組は応募時点では未実装
+
+JSON形式でのAPIもあります。
+例: http://ligtran.appspot.com/ligature?str=fi を要求すると、
+ {"result": "ﬁ"}
+がかえってきます。
+例: http://ligtran.appspot.com/ligature/reverse?str=%E6%A0%AA を要求すると、
+{"result": "木朱"}
+がかえってきます。
+</pre>
+<address>
+運営 <a href="http://twitter.com/whym">@whym</a>
+</address>
+</body>
 </html>

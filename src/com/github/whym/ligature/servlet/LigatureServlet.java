@@ -55,10 +55,29 @@ public class LigatureServlet extends HttpServlet {
       }
       buff.append(")");
       //System.err.println(buff);//!
-      this.patt = Pattern.compile(buff.toString());
+      this.patt = Pattern.compile(buff.toString(), Pattern.MULTILINE);
     } catch (IOException e) {
       e.printStackTrace();
       return;
+    }
+  }
+
+  public CharSequence convert(CharSequence str) {
+    StringBuffer buff = new StringBuffer();
+    Matcher m = this.patt.matcher(str);
+    boolean replaced = false;
+    while ( m.find() ) {
+      String rep = this.maps.get(m.group());
+      if ( rep != null ) {
+        m.appendReplacement(buff, rep);
+        replaced = true;
+      }
+    }
+    m.appendTail(buff);
+    if ( replaced ) {
+      return convert(buff);
+    } else {
+      return buff;
     }
   }
 
@@ -68,15 +87,7 @@ public class LigatureServlet extends HttpServlet {
     resp.setCharacterEncoding("UTF-8");
     PrintWriter writer = resp.getWriter();
     String str = Normalizer.normalize(req.getParameterMap().get("str")[0], Normalizer.Form.NFC);
-    StringBuffer buff = new StringBuffer();
-    Matcher m = this.patt.matcher(str);
-    while ( m.find() ) {
-      String rep = this.maps.get(m.group());
-      if ( rep != null ) {
-        m.appendReplacement(buff, rep);
-      }
-    }
-    m.appendTail(buff);
-    writer.printf("{\"return\": \"%s\"}", buff); // TODO: escape using StringEscapeUtils
+    CharSequence buff = convert(str);
+    writer.printf("{\"result\": \"%s\"}", StringEscapeUtils.escapeJavaScript(buff.toString()));
   }
 }
