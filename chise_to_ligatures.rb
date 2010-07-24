@@ -1,4 +1,5 @@
 #! /usr/bin/env ruby
+# -*- coding: utf-8 -*-
 require 'open-uri'
 urls = ['http://cvs.m17n.org/viewcvs/chise/ids/IDS-UCS-Basic.txt?content-type=text%2Fplain&revision=HEAD']
 ligatures = {}
@@ -7,6 +8,7 @@ tx = {
   "\u2E8A" => 'ト',
   "\u2E89" => 'リ',
   "\u2E95" => 'ヨ',
+  "\u2E98" => '才',
   "\u2E9D" => '月',
   "\u2E9F" => '母',
   "\u2EA0" => '民',
