@@ -3,7 +3,7 @@ package com.github.whym.ligature;
 import java.util.*;
 
 public abstract class AbstractMetrics implements Metrics {
-  protected byte[][] pixels;
+  byte[][] pixels;
 
   @Override public int getWidth() {
     return this.pixels.length;
@@ -36,7 +36,7 @@ public abstract class AbstractMetrics implements Metrics {
     int c = 7;
     for ( int i = 0; i < this.pixels.length; ++i ) {
       for ( int j = 0; j < this.pixels[i].length; ++j ) {
-        c =  (c * 3) & 0xFFFF;
+        c =  (c * 3 * this.pixels[i][j]) & 0xFFFF;
         c += 17;
       }
     }
@@ -74,6 +74,10 @@ public abstract class AbstractMetrics implements Metrics {
       System.arraycopy(this.pixels[a], 0, array[a], 0, this.pixels[a].length);
 		}
     return array;
+  }
+
+  @Override public byte valueAt(int i, int j) {
+    return this.pixels[i][j];
   }
 
   @Override public String toString() {

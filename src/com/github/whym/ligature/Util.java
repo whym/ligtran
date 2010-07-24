@@ -9,6 +9,16 @@ public class Util {
       return v;
     }
   }
+
+  public static boolean getPropertyBoolean(String name, boolean v) {
+    String s = System.getProperty(name);
+    if ( s != null ) {
+      return Boolean.parseBoolean(s);
+    } else {
+      return v;
+    }
+  }
+
   public static int getPropertyInt(String name, int v) {
     String s = System.getProperty(name);
     if ( s != null ) {

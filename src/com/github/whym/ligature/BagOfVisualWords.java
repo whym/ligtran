@@ -9,21 +9,22 @@ public class BagOfVisualWords {
 
   private Map<Metrics, Integer> codeIndex;
   private List<Metrics> codes;
+  private List<Double> weights;
   private int[][] bags;
   public BagOfVisualWords(List<Metrics> metricses, int g) {
     this(metricses, g, true, 0);
   }
   public BagOfVisualWords(List<Metrics> metricses, int g, boolean tfidf, int cutoff) {
-    this.codeIndex = new HashMap<Metrics, Integer>();
+    this.codeIndex = new TreeMap<Metrics, Integer>();
     this.codes = new ArrayList<Metrics>();
     List<Map<Metrics, Integer>> freqs = new ArrayList<Map<Metrics, Integer>>();
-    Map<Metrics, Integer> dfreqs = new HashMap<Metrics, Integer>();
+    Map<Metrics, Integer> dfreqs = new TreeMap<Metrics, Integer>();
     int n = 0;
     for ( Metrics m: metricses ) {
       Map<Metrics, Integer> fq = new TreeMap<Metrics, Integer>();
       for ( int i = 0; i + g <= m.getWidth(); ++i ) {
         for ( int j = 0; j + g <= m.getHeight(); ++j ) {
-          Metrics s = new SubMetrics(m, i, j, g, g);
+          Metrics s = new SubMetrics.Shallow((AbstractMetrics)m, i, j, g, g);
           Integer c;
           if ( (c = fq.get(s)) == null ) {
             c = 0;
@@ -53,17 +54,18 @@ public class BagOfVisualWords {
     //System.err.println(freqs);
     //System.err.println(dfreqs);
     this.bags = new int[freqs.size()][this.codes.size()];
+    this.weights = new ArrayList<Double>();
     for ( int i = 0; i < this.bags.length; ++i ) {
       for ( int j = 0; j < this.bags[i].length; ++j ) {
         Integer tf = freqs.get(i).get(this.codes.get(j));
         if ( tf == null ) {
           tf = 0;
         }
-        if ( tfidf ) {
-          this.bags[i][j] = (int)(0.5 + tf * Math.log((double)metricses.size() / dfreqs.get(this.codes.get(j))) / Math.log(2));
-        } else {
-          this.bags[i][j] = tf;
-        }
+        double w = tfidf?
+          Math.log((double)metricses.size() / dfreqs.get(this.codes.get(j))) / Math.log(2) :
+          1.0;
+        this.bags[i][j] = (int)(0.5 + tf * w);
+        this.weights.add(w);
       }
       //System.err.println(Arrays.toString(this.bags[i]));
     }
@@ -93,12 +95,37 @@ public class BagOfVisualWords {
         }
         this.bags[i] = a;
       }
-      //TODO update codeIndex
+      List<Metrics> a = new ArrayList<Metrics>();
+      Map<Metrics, Integer> b = new TreeMap<Metrics,Integer>();
+      for ( int j: ls) {
+        a.add(this.codes.get(j));
+        b.put(this.codes.get(j), b.size());
+      }
+      this.codes = a;
+      this.codeIndex = b;
     }
   }
   public List<Metrics> getCodeBook() {
     return codes;
   }
+
+  public int[] getBag(Metrics m, int g) {
+    int[] tf = new int[this.codes.size()];
+    for ( int i = 0; i + g <= m.getWidth(); ++i ) {
+      for ( int j = 0; j + g <= m.getHeight(); ++j ) {
+        Metrics s = new SubMetrics.Shallow((AbstractMetrics)m, i, j, g, g);
+        Integer c;
+        if ( (c = this.codeIndex.get(s)) != null ) {
+          ++tf[c];
+        }
+      }
+    }
+    for ( int i = 0; i < tf.length; ++i ) {
+      tf[i] = (int)(0.5 + tf[i] * this.weights.get(i));
+    }
+    return tf;
+  }
+
   public int[][] getBags() {
     return bags;
   }
