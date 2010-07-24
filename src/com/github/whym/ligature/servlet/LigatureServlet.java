@@ -81,13 +81,21 @@ public class LigatureServlet extends HttpServlet {
     }
   }
 
-  public void doGet(HttpServletRequest req, HttpServletResponse resp)
-    throws IOException {
-    resp.setContentType("text/plain");
-    resp.setCharacterEncoding("UTF-8");
+  public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     PrintWriter writer = resp.getWriter();
-    String str = Normalizer.normalize(req.getParameterMap().get("str")[0], Normalizer.Form.NFC);
+    String str = Normalizer.normalize(req.getParameter("str"), Normalizer.Form.NFC);
     CharSequence buff = convert(str);
-    writer.printf("{\"result\": \"%s\"}", StringEscapeUtils.escapeJavaScript(buff.toString()));
+    String redirect = req.getParameter("redirect_to");
+    if ( redirect != null ) {
+      System.err.println(redirect);//!
+      redirect = String.format(redirect, java.net.URLEncoder.encode(buff.toString(), "UTF-8"));
+      System.err.println(redirect);//!
+      resp.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
+      resp.setHeader("Location", redirect);
+    } else {
+      resp.setContentType("text/plain");
+      resp.setCharacterEncoding("UTF-8");
+      writer.printf("{\"result\": \"%s\"}", StringEscapeUtils.escapeJavaScript(buff.toString()));
+    }
   }
 }
