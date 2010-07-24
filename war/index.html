@@ -37,14 +37,14 @@ function get_servlet() { return current; }
 </script>
 <style type="text/css">
 h1 { text-align: center; }
-body { width: 40em; margin: auto; }
+body { max-width: 40em; margin: auto; background-color: #EEE; color: #444; }
 textarea { width: 90%; height: 6em; font-size: 150%; }
 .counter { font-size: 200%; text-align: right; vertical-align: top; }
 .description { font-size: 90%; position: relative; left: 10%; }
 </style>
 </head>
 <body>
-<h1><img src="http://www.twitlogo.com/c/b7bb40c3c1ba67cd92899e298f6469f4.png" alt="ligtran" /></h1>
+<h1><img src="ligtran_logo.png" alt="ligtran" /></h1>
 
 <form action="">
   <input type="radio" name="ligmode" id="short" checked="checked" onclick="set('ligature'); $('edit').onkeyup();" onkeypress="this.onclick();" />
@@ -54,12 +54,14 @@ textarea { width: 90%; height: 6em; font-size: 150%; }
 </form>
 
 <div class="box">
-<textarea rows="6" cols="60" id="edit" onkeyup="convert(get_servlet(), 'edit', 'result', 'editc', 'resultc');" onmouseup="this.onkeyup();" ></textarea>
+<textarea rows="6" cols="40" id="edit" onkeyup="convert(get_servlet(), 'edit', 'result', 'editc', 'resultc');" onmouseup="this.onkeyup();" >
+</textarea>
 <label class="counter" id="editc" for="edit">0</label>
 </div>
 
 <div class="box">
-<textarea rows="6" cols="60" id="result" readonly="readonly" onfocus="copy_all('result')"></textarea>
+<textarea rows="6" cols="40" id="result" readonly="readonly" onfocus="copy_all('result')">
+</textarea>
 <label class="counter" id="resultc" for="edit">0</label>
 </div>
 
