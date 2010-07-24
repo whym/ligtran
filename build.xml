@@ -12,29 +12,30 @@
   <target name="init">
     <echo level="info" message="junit.present=${junit.present}" />
     <tstamp/>
-    <mkdir dir="${build}" />
+    <mkdir dir="${build}/classes" />
   </target>
 
   <target name="compile" depends="init"
           description="compile the source">
-    <depend srcdir="${src}" destdir="${build}" cache="${build}/dependencycache" closure="no">
+    <depend srcdir="${src}" destdir="${build}/classes" cache="${build}/dependencycache" closure="no">
       <exclude name="test/**/Test*.java"/>
       <include name="**/ligature/*.java" />
     </depend>
-    <javac srcdir="${src}" destdir="${build}" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
+    <javac srcdir="${src}" destdir="${build}/classes" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
       <classpath>
       </classpath>
       <compilerarg value="-Xlint:unchecked" />
       <exclude name="test/**/Test*.java"/>
       <include name="**/ligature/*.java"/>
+      <include name="**/ligature/servlet/*.java"/>
     </javac>
   </target>
   <target name="compile-test" depends="compile"
           description="compile the source of tests">
-    <depend srcdir="${src}" destdir="${build}" cache="${build}/dependencycache" closure="no">
+    <depend srcdir="${src}" destdir="${build}/classes" cache="${build}/dependencycache" closure="no">
       <include name="test/**/Test*.java"/>
     </depend>
-    <javac srcdir="${src}" destdir="${build}" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
+    <javac srcdir="${src}" destdir="${build}/classes" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
       <classpath>
       </classpath>
       <compilerarg value="-Xlint:unchecked" />
@@ -46,12 +47,21 @@
           description="generate the distribution">
     <mkdir dir="${dist}" />
     <jar jarfile="${dist}/${ant.project.name}.jar">
-      <fileset dir="${build}" includes="com/" />
+      <fileset dir="${build}/classes" />
       <manifest>
         <!-- <attribute name="Main-Class" value="com.github.whym.ligature.FrontEnd"/> -->
         <attribute name="Implementation-Version" value="${my.TODAY}" />
       </manifest>
     </jar>
+  </target>
+
+  <target name="war" depends="compile">
+    <copy todir="${war}/WEB-INF/classes">
+      <fileset dir="${build}/classes" />
+    </copy>
+    <copy todir="${war}/WEB-INF/lib">
+      <fileset dir="lib" />
+    </copy>
   </target>
 
   <target name="test" if="junit.present" depends="compile, compile-test"
@@ -63,7 +73,7 @@
         <enable package="com.github.whym.ligature" />
       </assertions>
       <classpath>
-        <pathelement location="${build}" />
+        <pathelement location="${build}/classes" />
       </classpath>
       <formatter type="plain" />
       <batchtest fork="yes" todir="${reports.tests}">
@@ -98,6 +108,7 @@
           description="clean up">
     <delete dir="${build}" />
     <delete dir="${dist}" />
+    <delete dir="${war}/WEB-INF/classes" />
     <delete dir="${reports.tests}" />
   </target>
 </project>
