@@ -44,40 +44,44 @@ public class BottomUpClustering implements Clustering {
   }
   @Override public boolean iterate() {
     double min = Double.MAX_VALUE;
-    int[] minpair = new int[] {-1, -1};
+    List<int[]> minpairs = new ArrayList<int[]>();
     for ( int i = 0; i < this.centroids.size(); ++i ) {
       for ( int j = 0; j < this.centroids.size(); ++j ) {
         if ( i != j  && this.active.get(i) &&  this.active.get(j) ) {
           double d = distance(i, j);
           if ( d < min ) {
             min = d;
-            minpair[0] = i;
-            minpair[1] = j;
+            minpairs.clear();
+            minpairs.add(new int[]{i, j});
+          } else if ( d == min ) {
+            minpairs.add(new int[]{i, j});
           }
         }
       }
     }
-    System.err.println(Arrays.toString(minpair) + min);//!
-    if ( !this.converge() && min != Double.MAX_VALUE ) {
-      // update centroids
-      double[] xx = this.centroids.get(minpair[0]);
-      double[] yy = this.centroids.get(minpair[1]);
-      double[] c = new double[xx.length];
-      for ( int i = 0; i < xx.length; ++i ) {
-        c[i] = (xx[i] + yy[i]) / 2;
+    for ( int[] minpair: minpairs ) {
+      System.err.println(Arrays.toString(minpair) + min);//!
+      if ( !this.converge() && min != Double.MAX_VALUE ) {
+        // update centroids
+        double[] xx = this.centroids.get(minpair[0]);
+        double[] yy = this.centroids.get(minpair[1]);
+        double[] c = new double[xx.length];
+        for ( int i = 0; i < xx.length; ++i ) {
+          c[i] = (xx[i] + yy[i]) / 2;
+        }
+        this.centroids.add(c);
+        
+        // update clusters
+        List<Integer> ls = new ArrayList<Integer>();
+        ls.addAll(this.clusters.get(minpair[0]));
+        ls.addAll(this.clusters.get(minpair[1]));
+        this.clusters.add(ls);
+        
+        this.active.set(minpair[0], false);
+        this.active.set(minpair[1], false);
+        this.active.add(true);
+        this.mindist = min;
       }
-      this.centroids.add(c);
-
-      // update clusters
-      List<Integer> ls = new ArrayList<Integer>();
-      ls.addAll(this.clusters.get(minpair[0]));
-      ls.addAll(this.clusters.get(minpair[1]));
-      this.clusters.add(ls);
-
-      this.active.set(minpair[0], false);
-      this.active.set(minpair[1], false);
-      this.active.add(true);
-      this.mindist = min;
       return true;
     }
     return false;
