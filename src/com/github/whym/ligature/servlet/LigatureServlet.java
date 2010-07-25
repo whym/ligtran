@@ -9,29 +9,43 @@ import javax.servlet.*;
 import org.apache.commons.lang.StringEscapeUtils;
 
 public class LigatureServlet extends HttpServlet {
+  private static final LigatureServlet reversedInstance = new LigatureServlet(true);
   private Map<String,String> maps;
   private Pattern patt;
 
-  private static String unicode_escape(String s) {
+  private static String unicode_escape(CharSequence s) {
     StringBuffer buff = new StringBuffer();
-    for ( char c: s.toCharArray() ) {
-      buff.append(String.format("\\u%04x", (int)c));
+    for ( int i = 0; i < s.length(); ++i ) {
+      buff.append(String.format("\\u%04x", (int)s.charAt(i)));
     }
     return buff.toString();
   }
 
-  public LigatureServlet() {
-    this.maps = new HashMap<String,String>();
+  private static CharSequence reverse(CharSequence s) {
+    return new StringBuffer(s).reverse();
   }
+
+  public LigatureServlet() {
+    this(false);
+  }
+
+  private LigatureServlet(boolean reverse) {
+    _init(reverse);
+  }
+
   @Override public void init(ServletConfig config) throws ServletException {
     super.init(config);
     boolean reversed = false;
     if ( config.getInitParameter("reverse") != null ) {
       reversed = true;
     }
+    _init(reversed);
+  }
+
+  private void _init(boolean reversed) {
+    this.maps = new HashMap<String,String>();
     try {
       BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("ligatures.txt"), "UTF-8"));
-      StringBuffer buff = new StringBuffer("(");
       String line;
       while ( (line = reader.readLine()) != null ) {
         String[] s = line.split("\\s+");
@@ -44,17 +58,31 @@ public class LigatureServlet extends HttpServlet {
             k = s[0];
             v = s[1];
           }
-          if ( this.maps.get(k) == null ) {
+          if ( k.length() > 0  &&  this.maps.get(k) == null ) {
             this.maps.put(k, v);
-            if ( buff.length() > 1 ) {
-              buff.append("|");
-            }
-            buff.append(unicode_escape(k));
           }
         }
       }
+      List<String> ls = new ArrayList<String>(this.maps.keySet());
+      Collections.sort(ls, new Comparator<String>(){
+          public int compare(String a, String b) {
+            if ( a.length() != b.length() ) {
+              return b.length() - a.length();
+            }
+            return a.compareTo(b);
+          }
+          public boolean equals(String a, String b) {
+            return compare(a, b) == 0;
+          }
+        });
+      StringBuffer buff = new StringBuffer("(");
+      for ( String k: ls) {
+        if ( buff.length() > 1 ) {
+          buff.append("|");
+        }
+        buff.append(unicode_escape(reverse(k)));
+      }
       buff.append(")");
-      //System.err.println(buff);//!
       this.patt = Pattern.compile(buff.toString(), Pattern.MULTILINE);
     } catch (IOException e) {
       e.printStackTrace();
@@ -67,7 +95,7 @@ public class LigatureServlet extends HttpServlet {
     Matcher m = this.patt.matcher(str);
     boolean replaced = false;
     while ( m.find() ) {
-      String rep = this.maps.get(m.group());
+      String rep = reverse(this.maps.get(reverse(m.group()).toString())).toString();
       if ( rep != null ) {
         m.appendReplacement(buff, rep);
         replaced = true;
@@ -83,8 +111,16 @@ public class LigatureServlet extends HttpServlet {
 
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     PrintWriter writer = resp.getWriter();
-    String str = Normalizer.normalize(req.getParameter("str"), Normalizer.Form.NFC);
-    CharSequence buff = convert(str);
+    String str = req.getParameter("q");
+    if ( str == null ) {
+      str = req.getParameter("str"); // backward compatibility
+    }
+    str = Normalizer.normalize(str, Normalizer.Form.NFC);
+    CharSequence buff = reverse(convert(reverse(str)));
+    CharSequence buff2 = reverse(convert(reversedInstance.convert(reverse(str))));
+    if ( buff2.length() != buff.length()) {
+      buff = buff2;
+    }
     String redirect = req.getParameter("redirect_to");
     if ( redirect != null ) {
       System.err.println(redirect);//!
