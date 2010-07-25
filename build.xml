@@ -3,6 +3,7 @@
     Ligature encoder &amp; decoder
   </description>
   <available property="junit.present"     classname="junit.runner.Version" />
+  <available property="servlet.present"   classname="javax.servlet.Servlet" />
   <tstamp prefix="my">
     <format property="TODAY" pattern="yyyy-MM-dd hh:mm" locale="en,UK"/>
   </tstamp>
@@ -11,11 +12,12 @@
 
   <target name="init">
     <echo level="info" message="junit.present=${junit.present}" />
+    <echo level="info" message="junit.present=${servlet.present}" />
     <tstamp/>
     <mkdir dir="${build}/classes" />
   </target>
 
-  <target name="compile" depends="init"
+  <target name="compile-core" depends="init"
           description="compile the source">
     <depend srcdir="${src}" destdir="${build}/classes" cache="${build}/dependencycache" closure="no">
       <exclude name="test/**/Test*.java"/>
@@ -27,10 +29,23 @@
       <compilerarg value="-Xlint:unchecked" />
       <exclude name="test/**/Test*.java"/>
       <include name="**/ligature/*.java"/>
+    </javac>
+  </target>
+  <target name="compile-servlet" depends="compile-core"
+          description="compile the source of servlets"
+          if="servlet.present">
+    <depend srcdir="${src}" destdir="${build}/classes" cache="${build}/dependencycache" closure="no">
+      <include name="test/**/Test*.java"/>
+    </depend>
+    <javac srcdir="${src}" destdir="${build}/classes" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
+      <classpath>
+      </classpath>
+      <compilerarg value="-Xlint:unchecked" />
+      <exclude name="test/**/Test*.java"/>
       <include name="**/ligature/servlet/*.java"/>
     </javac>
   </target>
-  <target name="compile-test" depends="compile"
+  <target name="compile-test" depends="compile-core"
           description="compile the source of tests">
     <depend srcdir="${src}" destdir="${build}/classes" cache="${build}/dependencycache" closure="no">
       <include name="test/**/Test*.java"/>
@@ -42,6 +57,9 @@
       <include name="test/**/Test*.java"/>
     </javac>
   </target>
+
+  <target name="compile" depends="compile-core,compile-servlet,compile-test"
+          description="compile the sources"/>
 
   <target name="dist" depends="compile"
           description="generate the distribution">
@@ -64,7 +82,7 @@
     </copy>
   </target>
 
-  <target name="test" if="junit.present" depends="compile, compile-test"
+  <target name="test" if="junit.present" depends="compile-test"
           description="run unit tests">
     <mkdir dir="${reports.tests}" />
     <junit printsummary="on" showoutput="yes" fork="yes" haltonfailure="no">
