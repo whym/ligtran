@@ -55,19 +55,21 @@ public class BagOfVisualWords {
     //System.err.println(dfreqs);
     this.bags = new int[freqs.size()][this.codes.size()];
     this.weights = new ArrayList<Double>();
+    for ( int j = 0; j < this.bags[0].length; ++j ) {
+      double w = tfidf?
+        Math.log((double)metricses.size() / dfreqs.get(this.codes.get(j))) / Math.log(2) :
+        1.0;
+      this.weights.add(w);
+    }
     for ( int i = 0; i < this.bags.length; ++i ) {
       for ( int j = 0; j < this.bags[i].length; ++j ) {
         Integer tf = freqs.get(i).get(this.codes.get(j));
         if ( tf == null ) {
           tf = 0;
         }
-        double w = tfidf?
-          Math.log((double)metricses.size() / dfreqs.get(this.codes.get(j))) / Math.log(2) :
-          1.0;
+        double w = this.weights.get(j);
         this.bags[i][j] = (int)(0.5 + tf * w);
-        this.weights.add(w);
       }
-      //System.err.println(Arrays.toString(this.bags[i]));
     }
   }
   public void cutoff(int threshold) {
@@ -97,12 +99,15 @@ public class BagOfVisualWords {
       }
       List<Metrics> a = new ArrayList<Metrics>();
       Map<Metrics, Integer> b = new TreeMap<Metrics,Integer>();
+      List<Double> c = new ArrayList<Double>();
       for ( int j: ls) {
         a.add(this.codes.get(j));
         b.put(this.codes.get(j), b.size());
+        c.add(this.weights.get(j));
       }
       this.codes = a;
       this.codeIndex = b;
+      this.weights = c;
     }
   }
   public List<Metrics> getCodeBook() {
