@@ -10,6 +10,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 
 public class LigatureServlet extends HttpServlet {
   private static final LigatureServlet reversedInstance = new LigatureServlet(true);
+  private boolean reversed;
   private Map<String,String> maps;
   private Pattern patt;
 
@@ -43,6 +44,7 @@ public class LigatureServlet extends HttpServlet {
   }
 
   private void _init(boolean reversed) {
+    this.reversed = reversed;
     this.maps = new HashMap<String,String>();
     try {
       BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream("ligatures.txt"), "UTF-8"));
@@ -117,15 +119,15 @@ public class LigatureServlet extends HttpServlet {
     }
     str = Normalizer.normalize(str, Normalizer.Form.NFC);
     CharSequence buff = reverse(convert(reverse(str)));
-    CharSequence buff2 = reverse(convert(reversedInstance.convert(reverse(str))));
-    if ( buff2.length() != buff.length()) {
-      buff = buff2;
+    if ( !reversed ) {
+      CharSequence buff2 = reverse(convert(reversedInstance.convert(reverse(str))));
+      if ( buff2.length() < buff.length()) {
+        buff = buff2;
+      }
     }
     String redirect = req.getParameter("redirect_to");
     if ( redirect != null ) {
-      System.err.println(redirect);//!
       redirect = String.format(redirect, java.net.URLEncoder.encode(buff.toString(), "UTF-8"));
-      System.err.println(redirect);//!
       resp.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
       resp.setHeader("Location", redirect);
     } else {
