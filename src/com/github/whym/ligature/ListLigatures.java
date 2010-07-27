@@ -23,7 +23,7 @@ public class ListLigatures {
         String norm = Normalizer.normalize(s, NFKC);
         if ( norm.length() > s.length()
              && !norm.contains("\u0308")) {
-          UnigramMetrics m = new UnigramMetrics(s, size, false, font);
+          UnigramMetrics m = new UnigramMetrics(s, size, false, true, font);
           if ( min < m.getBlackness() && m.getBlackness() < max ) {
             System.out.printf("%s %s\n", norm, s);
             for ( Normalizer.Form f: new Normalizer.Form[]{NFC, NFD, NFKD} ) {

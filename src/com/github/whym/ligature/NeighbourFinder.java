@@ -64,7 +64,7 @@ public class NeighbourFinder {
   }
 
 
-  private static List<Metrics> readMetrics(Reader reader, int size, boolean antialias, Font font, double min, double max) throws IOException {
+  private static List<Metrics> readMetrics(Reader reader, int size, boolean antialias, boolean square, Font font, double min, double max) throws IOException {
     BufferedReader read = new BufferedReader(reader);
     String line;
     List<Metrics> list = new ArrayList<Metrics>();
@@ -74,7 +74,7 @@ public class NeighbourFinder {
       if ( p < 0 ) p = line.length();
       line = line.substring(0, p);
       if ( line.length() == 0 ) continue;
-      UnigramMetrics m = new UnigramMetrics(line, size, antialias, font);
+      UnigramMetrics m = new UnigramMetrics(line, size, antialias, square, font);
       if ( min < m.getBlackness() && m.getBlackness() < max ) {
         list.add(m);
       } else {
@@ -93,14 +93,15 @@ public class NeighbourFinder {
     double max1 = Util.getPropertyDouble("max1", 0.7);
     double max2 = Util.getPropertyDouble("max2", 0.5);
     boolean antialias = Util.getPropertyBoolean("antialias", false);
+    boolean square  = Util.getPropertyBoolean("square", true);
     boolean tfidf = Util.getPropertyBoolean("tfidf", true);
     Font font = new Font("serif", Font.PLAIN, size);
     String fpath = Util.getProperty("font", null);
     if ( fpath != null ) {
       font = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(fpath));
     }
-    List<Metrics> ls1 = readMetrics(new FileReader(args[0]), size, antialias, font, min, max1);
-    List<Metrics> ls2 = readMetrics(new FileReader(args[1]), size, antialias, font, min, max2);
+    List<Metrics> ls1 = readMetrics(new FileReader(args[0]), size, antialias, square, font, min, max1);
+    List<Metrics> ls2 = readMetrics(new FileReader(args[1]), size, antialias, square, font, min, max2);
     System.err.printf("%s: %d, %s: %d\n", args[0], ls1.size(), args[1], ls2.size());
     NeighbourFinder finder = new NeighbourFinder(ls1, ls2, grid, threshold, cutoff, tfidf, new Iterated.Pair<Set<Metrics>, Double>() {
         public void execute(Set<Metrics> s, Double d) {

@@ -28,7 +28,7 @@ public class ListCharacters {
            !Character.isSpaceChar(c) ) {
         String s = "" + c;
         if ( Normalizer.normalize(s, NFKC).contains("\u0308") ) continue; //TODO: adhoc
-        UnigramMetrics m = new UnigramMetrics(s, size, false, font);
+        UnigramMetrics m = new UnigramMetrics(s, size, false, true, font);
         if ( min < m.getBlackness() && m.getBlackness() < max ) {
           System.out.println("" + c + " " + (int)c);
         }
