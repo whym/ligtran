@@ -117,6 +117,9 @@ public class LigatureServlet extends HttpServlet {
     if ( str == null ) {
       str = req.getParameter("str"); // backward compatibility
     }
+    if ( str == null ) {
+      str = "";
+    }
     str = Normalizer.normalize(str, Normalizer.Form.NFC);
     CharSequence buff = reverse(convert(reverse(str)));
     if ( !reversed ) {
