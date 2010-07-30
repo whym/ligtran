@@ -113,6 +113,7 @@ public class LigatureServlet extends HttpServlet {
 
   public void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     PrintWriter writer = resp.getWriter();
+
     String str = req.getParameter("q");
     if ( str == null ) {
       str = req.getParameter("str"); // backward compatibility
@@ -134,9 +135,19 @@ public class LigatureServlet extends HttpServlet {
       resp.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
       resp.setHeader("Location", redirect);
     } else {
-      resp.setContentType("text/plain");
-      resp.setCharacterEncoding("UTF-8");
-      writer.printf("{\"result\": \"%s\"}", StringEscapeUtils.escapeJavaScript(buff.toString()));
+      String format = req.getParameter("format");
+      if ( format == null ) {
+        format = "json";
+      }
+      if ( format.equals("raw") ) {
+        resp.setContentType("text/plain");
+        resp.setCharacterEncoding("UTF-8");
+        writer.print(buff.toString());
+      } else {
+        resp.setContentType("text/plain");
+        resp.setCharacterEncoding("UTF-8");
+        writer.printf("{\"result\": \"%s\"}", StringEscapeUtils.escapeJavaScript(buff.toString()));
+      }
     }
   }
 }

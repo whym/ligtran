@@ -1,9 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<% String str = request.getParameter("q"); %>
-<% if ( str == null ) { str = ""; } %>
-<% String snippet = str.length() < 24 ? str : str.substring(0, Math.min(22, str.length())) + "..."; %>
-<% boolean reverse = request.getParameter("reverse") != null; %>
+<%
+   String str = request.getParameter("q");
+   if ( str == null ) { str = ""; }
+   String snippet = str.length() < 24 ? str : str.substring(0, Math.min(22, str.length())) + "...";
+   boolean reverse = request.getParameter("reverse") != null && !request.getParameter("reverse").equals("false");
+   String queryURL = "/ligature" + (reverse?"/reverse":"") + "?format=raw&q=" + java.net.URLEncoder.encode(str, "UTF-8");
+ %>
+<%
+   String thisURL = request.getServletPath().toString() + "?" + request.getQueryString();
+   thisURL = thisURL.replace("index.jsp", "");
+   if ( request.getParameter("reverse") != null ) {
+     if ( thisURL.contains("reverse=") ) {
+     String url = thisURL.replaceAll("(\\?)?(&)?([a-z]+)=false(&)?", "$1$4").
+                          replaceAll("(\\?)?(&)?([a-z]+)=true(&)?", "$1$2$3$4");
+       response.sendRedirect(url);
+     }
+   }
+ %>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
 <head>
 <%@page contentType="text/html;charset=UTF-8"%>
@@ -82,35 +96,39 @@ h1 a img {border: none;}
 <h1><a href="."><img src="ligtran_logo.png" alt="ligtran" /></a></h1>
 <p class="description">文字と文字をくっつけたり離したりすることでテキストを短くしたり長くするウェブサービス</p>
 
+<form action="/" method="get">
 <div id="body">
 
 <div class="box">
 <p>↓ここにテキストを入力してください。</p>
-<textarea rows="4" cols="20" id="edit" onmouseup="convert(get_servlet(), 'edit', 'result', 'editc', 'resultc');" onkeyup="changes.enterTime=get_time();" onfocus="this.onmouseup();" name="q">
+<textarea rows="4" cols="20" id="edit" name="q" onmouseup="convert(get_servlet(), 'edit', 'result', 'editc', 'resultc');" onkeyup="changes.enterTime=get_time();" onfocus="this.onmouseup();">
 <%=str%></textarea>
 <label class="counter" id="editc" for="edit"><%=str.length()%></label>
 </div>
 
-<form action="/" class="ligmode">
+<div class="ligmode">
 <label class="short" for="short">
-<input type="radio" name="ligmode" id="short" <%=reverse?"":"checked=\"checked\""%> onclick="$('edit').onmouseup();" onkeypress="this.onclick();" />
+<input type="radio" name="reverse" value="false" id="short" <%=reverse?"":"checked=\"checked\""%> onclick="$('edit').onmouseup();" onkeypress="this.onclick();" />
 短くする
 </label>
 <label class="long"  for="long">
-<input type="radio" name="ligmode" id="long"  <%=reverse?"checked=\"checked\"":""%> onclick="$('edit').onmouseup();" onkeypress="this.onclick();" />
+<input type="radio" name="reverse" value="true" id="long"  <%=reverse?"checked=\"checked\"":""%> onclick="$('edit').onmouseup();" onkeypress="this.onclick();" />
 長くする</label>
-</form>
+</div>
 
 <div class="box">
-<textarea rows="4" cols="20" id="result" readonly="readonly" onfocus="copy_all('result');">
-</textarea>
+<textarea rows="4" cols="20" id="result" readonly="readonly" onfocus="copy_all('result');"><jsp:include page="<%=queryURL%>" /></textarea>
 <label class="counter" id="resultc" for="edit">0</label>
 </div>
 
 </div>
+<noscript>
+<input type="submit" />
+</noscript>
+</form>
 
 <p class="permalinkline">
-<a id="permalink" name="permalink" href=".">この結果へのリンク</a>:
+<a id="permalink" name="permalink" href="<%=thisURL%>">この結果へのリンク</a>:
 <input id="permalinkbox" type="text" size="50" readonly="readonly" onfocus="copy_all('permalinkbox');" value="" />
 </p>
 
@@ -124,7 +142,7 @@ h1 a img {border: none;}
 <h2>使い方</h2>
 <ol>
 <li> 一つ目の入力欄にテキストを入力します。</li>
-<li>「短く」か「長く」を選びます。</li>
+<li>「短くする」か「長くする」を選びます。</li>
 <li> 変換された結果が二つ目の欄に表示されます。</li>
 </ol>
 
