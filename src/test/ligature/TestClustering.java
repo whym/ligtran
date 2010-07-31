@@ -29,7 +29,7 @@ public class TestClustering {
     List<Set<Metrics>> expect = new ArrayList<Set<Metrics>>();
     expect.add(new HashSet<Metrics>(Arrays.<Metrics>asList(new Metrics[]{ls.get(0), ls2.get(0)})));
     assertEquals(expect,
-                 new NeighbourFinder(ls, ls2, 2, 0.9, 0, true,
+                 new NeighbourFinder(ls, ls2, 2, 0.9, 0, true, 0,
                                      new Iterated.Pair<Set<Metrics>, Double>(){public void execute(Set<Metrics> s, Double d){}}).getMappings());
   }
   @Test public void testMetricsClusterer() {

@@ -12,16 +12,18 @@ public class BagOfVisualWords {
   private List<Double> weights;
   private int[][] bags;
   public BagOfVisualWords(List<Metrics> metricses, int g) {
-    this(metricses, g, true, 0);
+    this(metricses, g, true, 0, 0.1);
   }
-  public BagOfVisualWords(List<Metrics> metricses, int g, boolean tfidf, int cutoff) {
+  public BagOfVisualWords(List<Metrics> metricses, int g, boolean tfidf, int cutoff, double oov_weight) {
     this.codeIndex = new TreeMap<Metrics, Integer>();
     this.codes = new ArrayList<Metrics>();
+    this.codes.add(EmptyMetrics.getInstance()); // unknown word
+    this.codeIndex.put(EmptyMetrics.getInstance(), 0);
     List<Map<Metrics, Integer>> freqs = new ArrayList<Map<Metrics, Integer>>();
     Map<Metrics, Integer> dfreqs = new TreeMap<Metrics, Integer>();
-    int n = 0;
     for ( Metrics m: metricses ) {
       Map<Metrics, Integer> fq = new TreeMap<Metrics, Integer>();
+      fq.put(EmptyMetrics.getInstance(), 0);
       for ( int i = 0; i + g <= m.getWidth(); ++i ) {
         for ( int j = 0; j + g <= m.getHeight(); ++j ) {
           Metrics s = new SubMetrics.Shallow((AbstractMetrics)m, i, j, g, g);
@@ -36,6 +38,8 @@ public class BagOfVisualWords {
           fq.put(s, c + 1);
         }
       }
+
+      // cutoff by frequency
       List<Metrics> rm = new ArrayList<Metrics>();
       for ( Metrics x: fq.keySet() ) {
         if ( fq.get(x) <= cutoff ) {
@@ -48,19 +52,21 @@ public class BagOfVisualWords {
       for ( Metrics x: rm ) {
         fq.remove(x);
       }
+      //fq.put(EmptyMetrics.getInstance(), rm.size());
       freqs.add(fq);
-      ++n;
     }
     //System.err.println(freqs);
     //System.err.println(dfreqs);
     this.bags = new int[freqs.size()][this.codes.size()];
     this.weights = new ArrayList<Double>();
-    for ( int j = 0; j < this.bags[0].length; ++j ) {
+    this.weights.add(oov_weight);
+    for ( int j = 1; j < this.codes.size(); ++j ) {
       double w = tfidf?
         Math.log((double)metricses.size() / dfreqs.get(this.codes.get(j))) / Math.log(2) :
         1.0;
       this.weights.add(w);
     }
+    
     for ( int i = 0; i < this.bags.length; ++i ) {
       for ( int j = 0; j < this.bags[i].length; ++j ) {
         Integer tf = freqs.get(i).get(this.codes.get(j));
@@ -75,7 +81,8 @@ public class BagOfVisualWords {
   public void cutoff(int threshold) {
     List<Integer> ls = new ArrayList<Integer>();
     int dim = this.bags[0].length;
-    for ( int j = 0; j < dim; ++j ) {
+    ls.add(0);                  // oov
+    for ( int j = 1; j < dim; ++j ) {
       boolean allzero = true;
       for ( int i = 0; i < this.bags.length; ++i ) {
         if ( this.bags[i][j] > threshold ) {
@@ -122,9 +129,13 @@ public class BagOfVisualWords {
         Integer c;
         if ( (c = this.codeIndex.get(s)) != null ) {
           ++tf[c];
+        } else {
+          ++tf[0];  // unknown word
         }
       }
     }
+    //System.err.println(Arrays.toString(tf));//!
+    //System.err.println(weights);//!
     for ( int i = 0; i < tf.length; ++i ) {
       tf[i] = (int)(0.5 + tf[i] * this.weights.get(i));
     }

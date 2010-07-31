@@ -6,10 +6,10 @@ import java.awt.Font;
 public class NeighbourFinder {
   BagOfVisualWords bags;
   Map<Set<Metrics>, Double> map;
-  public NeighbourFinder(List<Metrics> from_, List<Metrics> to_, int g, double threshold, int cutoff, boolean tfidf, Iterated.Pair<Set<Metrics>, Double> it) {
-    BagOfVisualWords bag = new BagOfVisualWords(from_, g, tfidf, cutoff);
+  public NeighbourFinder(List<Metrics> from_, List<Metrics> to_, int g, double threshold, int cutoff, boolean tfidf, double oovweight, Iterated.Pair<Set<Metrics>, Double> it) {
+    BagOfVisualWords bag = new BagOfVisualWords(from_, g, tfidf, cutoff, oovweight);
     System.err.println(bag.getBags()[0].length);//!
-    bag.cutoff(cutoff);
+    bag.cutoff(cutoff);                         // TODO: different cutoff for freq and weighted score
     System.err.println(bag.getBags()[0].length);//!
     int[][] from = bag.getBags();
     int[][] to   = new int[to_.size()][];
@@ -92,6 +92,7 @@ public class NeighbourFinder {
     double min = Util.getPropertyDouble("min", 0.01);
     double max1 = Util.getPropertyDouble("max1", 0.7);
     double max2 = Util.getPropertyDouble("max2", 0.5);
+    double oov = Util.getPropertyDouble("oov", 0.01);
     boolean antialias = Util.getPropertyBoolean("antialias", false);
     boolean square  = Util.getPropertyBoolean("square", true);
     boolean tfidf = Util.getPropertyBoolean("tfidf", true);
@@ -103,7 +104,7 @@ public class NeighbourFinder {
     List<Metrics> ls1 = readMetrics(new FileReader(args[0]), size, antialias, square, font, min, max1);
     List<Metrics> ls2 = readMetrics(new FileReader(args[1]), size, antialias, square, font, min, max2);
     System.err.printf("%s: %d, %s: %d\n", args[0], ls1.size(), args[1], ls2.size());
-    NeighbourFinder finder = new NeighbourFinder(ls1, ls2, grid, threshold, cutoff, tfidf, new Iterated.Pair<Set<Metrics>, Double>() {
+    NeighbourFinder finder = new NeighbourFinder(ls1, ls2, grid, threshold, cutoff, tfidf, oov, new Iterated.Pair<Set<Metrics>, Double>() {
         public void execute(Set<Metrics> s, Double d) {
           if ( s.size() > 1 && d > 0 ) {//TODO: adhoc fix for d=0
             for ( Metrics m: s ) {

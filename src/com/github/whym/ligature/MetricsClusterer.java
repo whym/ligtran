@@ -8,7 +8,7 @@ public class MetricsClusterer {
   List<Metrics> metrics;
   public MetricsClusterer(List<Metrics> metrics, int g, double threshold) {
     this.metrics = metrics;
-    this.bags = new BagOfVisualWords(metrics, g, false, 0);
+    this.bags = new BagOfVisualWords(metrics, g, false, 0, 1);
     this.cluster = new BottomUpClustering(this.bags.getBags(), threshold);
     while ( !this.cluster.converge() && this.cluster.iterate() ) {
     }
