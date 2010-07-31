@@ -82,7 +82,7 @@ public class SubMetrics extends AbstractMetrics {
         for ( int j = 0; j < this.width; ++j ) {
           buff.append(this.valueAt(i,j) != 0 ? this.valueAt(i,j) > 0 ? '+' : '#' : '.');
         }
-        buff.append("\n");
+        buff.append("/");
       }
       return buff.toString();
     }

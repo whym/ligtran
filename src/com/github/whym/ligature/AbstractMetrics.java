@@ -52,9 +52,15 @@ public abstract class AbstractMetrics implements Metrics {
       pixels = new byte[m.getWidth()][m.getHeight()];
       m.fillArray(pixels);
     }
+    if ( this.pixels.length < pixels.length ) {
+      return +1;
+    }
     for ( int i = 0; i < this.pixels.length; ++i ) {
       if ( i >= pixels.length ) {
         return -1;
+      }
+      if ( this.pixels[i].length < pixels[i].length ) {
+        return +1;
       }
       for ( int j = 0; j < this.pixels[i].length; ++j ) {
         if ( i >= pixels[i].length ) {
@@ -86,7 +92,7 @@ public abstract class AbstractMetrics implements Metrics {
       for ( int j = 0; j < this.pixels[i].length; ++j ) {
         buff.append(this.pixels[i][j] != 0 ? this.pixels[i][j] > 0 ? '+' : '#' : '.');
       }
-      buff.append("\n");
+      buff.append("/");
     }
     return buff.toString();
   }
