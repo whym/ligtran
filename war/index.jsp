@@ -90,6 +90,7 @@ textarea { display: inline-block; width: 78%; margin: 0 0 0 10%; height: auto; f
 .permalinkline { text-align: right; margin-bottom: 2em; }
 #permalinkbox { font-family: monospace; }
 h1 a img {border: none;}
+input[type=submit] { display: block; margin: 0 auto; font-size:130%; width: 12em; }
 </style>
 </head>
 <body>
@@ -121,10 +122,15 @@ h1 a img {border: none;}
 <label class="counter" id="resultc" for="edit">0</label>
 </div>
 
-</div>
 <noscript>
 <input type="submit" />
 </noscript>
+<script type="text/javascript">
+if(typeof (MochiKit)=="undefined"){
+  document.writeln('<input type="submit" />');
+}
+</script>
+</div>
 </form>
 
 <p class="permalinkline">
