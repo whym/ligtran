@@ -1,4 +1,4 @@
-package com.github.whym.ligature;
+package com.github.whym.ligtran;
 
 public interface Iterated<T> {
   void execute(T x);

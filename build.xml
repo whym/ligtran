@@ -1,4 +1,4 @@
-<project name="ligature" default="compile" basedir=".">
+<project name="ligtran" default="compile" basedir=".">
   <description>
     Ligature encoder &amp; decoder
   </description>
@@ -21,14 +21,14 @@
           description="compile the source">
     <depend srcdir="${src}" destdir="${build}/classes" cache="${build}/dependencycache" closure="no">
       <exclude name="test/**/Test*.java"/>
-      <include name="**/ligature/*.java" />
+      <include name="**/ligtran/*.java" />
     </depend>
     <javac srcdir="${src}" destdir="${build}/classes" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
       <classpath>
       </classpath>
       <compilerarg value="-Xlint:unchecked" />
       <exclude name="test/**/Test*.java"/>
-      <include name="**/ligature/*.java"/>
+      <include name="**/ligtran/*.java"/>
     </javac>
   </target>
   <target name="compile-servlet" depends="compile-core"
@@ -42,7 +42,7 @@
       </classpath>
       <compilerarg value="-Xlint:unchecked" />
       <exclude name="test/**/Test*.java"/>
-      <include name="**/ligature/servlet/*.java"/>
+      <include name="**/ligtran/servlet/*.java"/>
     </javac>
   </target>
   <target name="compile-test" depends="compile-core"
@@ -67,7 +67,7 @@
     <jar jarfile="${dist}/${ant.project.name}.jar">
       <fileset dir="${build}/classes" />
       <manifest>
-        <!-- <attribute name="Main-Class" value="com.github.whym.ligature.FrontEnd"/> -->
+        <!-- <attribute name="Main-Class" value="com.github.whym.ligtran.FrontEnd"/> -->
         <attribute name="Implementation-Version" value="${my.TODAY}" />
       </manifest>
     </jar>
@@ -88,7 +88,7 @@
     <junit printsummary="on" showoutput="yes" fork="yes" haltonfailure="no">
       <formatter type="xml" />
       <assertions>
-        <enable package="com.github.whym.ligature" />
+        <enable package="com.github.whym.ligtran" />
       </assertions>
       <classpath>
         <pathelement location="${build}/classes" />
@@ -109,7 +109,7 @@
   </target>
 
   <target name="javadoc" depends="init">
-    <javadoc packagenames="com.github.whym.ligature.*"
+    <javadoc packagenames="com.github.whym.ligtran.*"
              sourcepath="${src}"
              destdir="${build}/docs"
              use="true"

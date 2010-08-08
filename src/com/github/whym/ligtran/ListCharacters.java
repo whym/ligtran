@@ -1,4 +1,4 @@
-package com.github.whym.ligature;
+package com.github.whym.ligtran;
 
 import java.util.*;
 import java.awt.Font;

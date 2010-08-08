@@ -1,5 +1,5 @@
-package test.ligature;
-import com.github.whym.ligature.*;
+package test.ligtran;
+import com.github.whym.ligtran.*;
 import org.junit.*;
 import java.util.*;
 import static org.junit.Assert.*;

@@ -1,4 +1,4 @@
-package com.github.whym.ligature;
+package com.github.whym.ligtran;
 import java.util.*;
 
 public class BagOfVisualWords {

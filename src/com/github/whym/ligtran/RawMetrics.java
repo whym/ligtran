@@ -1,4 +1,4 @@
-package com.github.whym.ligature;
+package com.github.whym.ligtran;
 
 public class RawMetrics extends AbstractMetrics {
   public RawMetrics(byte[][] a) {
