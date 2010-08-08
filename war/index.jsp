@@ -161,7 +161,7 @@ if(typeof (MochiKit)=="undefined"){
 </dl>
 
 <h2>説明</h2>
-<p><a href="http://github.com/whym/ligtran#readme">詳しい説明とソースコードはこちら</a>です。</p>
+<p><a href="http://github.com/whym/ligtran#readme">詳しい説明とソースコードはこちら</a>です。<a href="http://www.slideshare.net/whym/ligtran">バイドゥ不自然言語処理コンテストでのライトニングトークのスライドがこちら</a>にあります。</p>
 
 <h2>バグ</h2>
 <ul>
