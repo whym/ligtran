@@ -138,7 +138,7 @@ if(typeof (MochiKit)=="undefined"){
 <input id="permalinkbox" type="text" size="50" readonly="readonly" onfocus="copy_all('permalinkbox');" value="" />
 </p>
 
-<p id="busy"><img src="bigrotation2.gif" alt="busy" /></p>
+<p id="busy"><img src="Ajax-loader.gif" alt="busy" /></p>
 
 <!-- 
 <input type="text" id="enter"/>
