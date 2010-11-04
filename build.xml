@@ -1,132 +1,124 @@
-<project name="ligtran" default="compile" basedir=".">
+<project name="ligtran" default="compile" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
   <description>
     Ligature encoder &amp; decoder
   </description>
-  <available property="junit.present"     classname="junit.runner.Version" />
-  <available property="servlet.present"   classname="javax.servlet.Servlet" />
   <tstamp prefix="my">
     <format property="TODAY" pattern="yyyy-MM-dd hh:mm" locale="en,UK"/>
   </tstamp>
   <property file="build.properties" />
   <property file="build.default.properties" />
+  <property name="build.sysclasspath" value="ignore" />
+  <property name="build.classes.dir" value="${build.dir}/classes" />
+  <property name="ivy.lib.dir" value="${lib.dir}" />
+  <available property="ivy.present"    classname="org.apache.ivy.Ivy" />
 
-  <target name="init">
-    <echo level="info" message="junit.present=${junit.present}" />
-    <echo level="info" message="junit.present=${servlet.present}" />
+  <!-- paths used for compilation and run  -->
+  <path id="lib.path.id">
+    <fileset dir="${lib.dir}" />
+  </path>
+  <path id="run.path.id">
+    <path refid="lib.path.id" />
+    <path location="${build.classes.dir}" />
+  </path>
+
+  <target name="resolve" description="retrieve dependencies with ivy" if="ivy.present">
+    <ivy:retrieve />
+  </target>
+
+  <target name="init" depends="resolve">
     <tstamp/>
-    <mkdir dir="${build}/classes" />
+    <echo level="info" message="ivy.present=${ivy.present}" />
+    <mkdir dir="${build.classes.dir}" />
   </target>
 
-  <target name="compile-core" depends="init"
-          description="compile the source">
-    <depend srcdir="${src}" destdir="${build}/classes" cache="${build}/dependencycache" closure="no">
-      <exclude name="test/**/Test*.java"/>
-      <include name="**/ligtran/*.java" />
+  <target name="compile" depends="init"
+          description="compile the sources">
+    <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="${build.dir}/dependencycache" closure="no">
+      <include name="**/*.java"/>
     </depend>
-    <javac srcdir="${src}" destdir="${build}/classes" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
-      <classpath>
-      </classpath>
+    <javac destdir="${build.classes.dir}" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8" classpathref="run.path.id">
+      <src path="${src.dir}/test/java" />
+      <src path="${src.dir}/main/java" />
       <compilerarg value="-Xlint:unchecked" />
-      <exclude name="test/**/Test*.java"/>
-      <include name="**/ligtran/*.java"/>
     </javac>
   </target>
-  <target name="compile-servlet" depends="compile-core"
-          description="compile the source of servlets"
-          if="servlet.present">
-    <depend srcdir="${src}" destdir="${build}/classes" cache="${build}/dependencycache" closure="no">
-      <include name="test/**/Test*.java"/>
-    </depend>
-    <javac srcdir="${src}" destdir="${build}/classes" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
-      <classpath>
-      </classpath>
-      <compilerarg value="-Xlint:unchecked" />
-      <exclude name="test/**/Test*.java"/>
-      <include name="**/ligtran/servlet/*.java"/>
-    </javac>
-  </target>
-  <target name="compile-test" depends="compile-core"
-          description="compile the source of tests">
-    <depend srcdir="${src}" destdir="${build}/classes" cache="${build}/dependencycache" closure="no">
-      <include name="test/**/Test*.java"/>
-    </depend>
-    <javac srcdir="${src}" destdir="${build}/classes" deprecation="yes" listfiles="yes" debug="yes" encoding="UTF-8">
-      <classpath>
-      </classpath>
-      <compilerarg value="-Xlint:unchecked" />
-      <include name="test/**/Test*.java"/>
-    </javac>
-  </target>
-
-  <target name="compile" depends="compile-core,compile-servlet,compile-test"
-          description="compile the sources" />
 
   <target name="dist" depends="compile"
           description="generate the distribution">
-    <mkdir dir="${dist}" />
-    <jar jarfile="${dist}/${ant.project.name}.jar">
-      <fileset dir="${build}/classes" />
+    <mkdir dir="${dist.dir}" />
+    <jar jarfile="${dist.dir}/${ant.project.name}.jar">
+      <fileset dir="${build.classes.dir}" />
       <manifest>
-        <!-- <attribute name="Main-Class" value="com.github.whym.ligtran.FrontEnd"/> -->
+        <attribute name="Main-Class" value="com.github.whym.ligtran.servlet.LigatureServlet"/>
         <attribute name="Implementation-Version" value="${my.TODAY}" />
       </manifest>
     </jar>
   </target>
 
   <target name="war" depends="compile">
-    <copy todir="${war}/WEB-INF/classes">
-      <fileset dir="${build}/classes" />
+    <mkdir dir="${war.dir}/WEB-INF" />
+    <copy todir="${war.dir}">
+      <fileset dir="${src.dir}/main/webapp" />
     </copy>
-    <copy todir="${war}/WEB-INF/lib">
-      <fileset dir="lib" />
+    <copy todir="${war.dir}/WEB-INF/classes">
+      <fileset dir="${build.classes.dir}" />
+    </copy>
+    <copy todir="${war.dir}/WEB-INF/lib">
+      <fileset dir="${lib.dir}">
+        <include name="*.jar" />
+      </fileset>
     </copy>
   </target>
 
-  <target name="test" if="junit.present" depends="compile-test"
+  <target name="test" depends="compile"
           description="run unit tests">
-    <mkdir dir="${reports.tests}" />
+    <mkdir dir="${reports.dir}" />
     <junit printsummary="on" showoutput="yes" fork="yes" haltonfailure="no">
       <formatter type="xml" />
       <assertions>
         <enable package="com.github.whym.ligtran" />
       </assertions>
-      <classpath>
-        <pathelement location="${build}/classes" />
-      </classpath>
+      <classpath refid="run.path.id" />
       <formatter type="plain" />
-      <batchtest fork="yes" todir="${reports.tests}">
-        <fileset dir="${src}">
+      <batchtest fork="yes" todir="${reports.dir}">
+        <fileset dir="${src.dir}/test/java">
           <include name="test/**/Test*.java" />
         </fileset>
       </batchtest>
     </junit>
-    <junitreport todir="${reports.tests}">
-      <fileset dir="${reports.tests}">
+    <junitreport todir="${reports.dir}">
+      <fileset dir="${reports.dir}">
         <include name="TEST-*.xml"/>
       </fileset>
-      <report format="frames" todir="${reports.tests}/html"/>
+      <report format="frames" todir="${reports.dir}/html"/>
     </junitreport>
   </target>
 
   <target name="javadoc" depends="init">
-    <javadoc packagenames="com.github.whym.ligtran.*"
-             sourcepath="${src}"
-             destdir="${build}/docs"
-             use="true"
-             linksource="true"
-             windowtitle="Ligature API Documentation"
-             doctitle="Ligature API Documentation"
-             bottom="Copyright &amp;copy; 2009 Whym.  All Rights Reserved.">
-      <classpath>
-      </classpath>
-    </javadoc>
+    <javadoc packagenames="com.github.whym.ligtran.*,com.github.whym.ligtran.servlet.*"
+             sourcepath="${src.dir}/main/java"
+             classpathref="run.path.id"
+             destdir="${build.dir}/docs"
+             use="yes"
+             linksource="yes"
+             encoding="UTF-8"
+             charset="UTF-8"
+             docencoding="UTF-8"
+             windowtitle="Ligtran API Documentation"
+             doctitle="Ligtran API Documentation"
+             bottom="Copyright &amp;copy; 2010 Whym.  All Rights Reserved."
+             >
+      </javadoc>
   </target>
 
-  <target name="clean"
-          description="clean up">
-    <delete dir="${build}" />
-    <delete dir="${dist}" />
-    <delete dir="${war}/WEB-INF/classes" />
-    <delete dir="${reports.tests}" />
+  <target name="clean" description="clean up">
+    <delete dir="${build.classes.dir}" />
+    <delete dir="${build.dir}" />
+    <delete dir="${dist.dir}" />
+    <delete dir="${war.dir}" />
+    <delete dir="${reports.dir}" />
+  </target>
+  <target name="clean-cache" description="clean the ivy cache">
+    <ivy:cleancache />
   </target>
 </project>
