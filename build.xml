@@ -49,7 +49,7 @@
     <jar jarfile="${dist.dir}/${ant.project.name}.jar">
       <fileset dir="${build.classes.dir}" />
       <manifest>
-        <attribute name="Main-Class" value="com.github.whym.ligtran.servlet.LigatureServlet"/>
+        <attribute name="Main-Class" value="org.whym.ligtran.servlet.LigatureServlet"/>
         <attribute name="Implementation-Version" value="${my.TODAY}" />
       </manifest>
     </jar>
@@ -76,7 +76,7 @@
     <junit printsummary="on" showoutput="yes" fork="yes" haltonfailure="no">
       <formatter type="xml" />
       <assertions>
-        <enable package="com.github.whym.ligtran" />
+        <enable package="org.whym.ligtran" />
       </assertions>
       <classpath refid="run.path.id" />
       <formatter type="plain" />
@@ -95,7 +95,7 @@
   </target>
 
   <target name="javadoc" depends="init">
-    <javadoc packagenames="com.github.whym.ligtran.*,com.github.whym.ligtran.servlet.*"
+    <javadoc packagenames="org.whym.ligtran.*,org.whym.ligtran.servlet.*"
              sourcepath="${src.dir}/main/java"
              classpathref="run.path.id"
              destdir="${build.dir}/docs"

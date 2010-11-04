@@ -1,5 +1,5 @@
 package test.ligtran;
-import com.github.whym.ligtran.*;
+import org.whym.ligtran.*;
 import org.junit.*;
 import java.util.*;
 import static org.junit.Assert.*;

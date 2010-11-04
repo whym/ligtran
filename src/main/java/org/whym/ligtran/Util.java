@@ -1,4 +1,4 @@
-package com.github.whym.ligtran;
+package org.whym.ligtran;
 
 public class Util {
   public static String getProperty(String name, String v) {

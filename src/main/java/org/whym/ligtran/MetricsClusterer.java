@@ -1,4 +1,4 @@
-package com.github.whym.ligtran;
+package org.whym.ligtran;
 import java.util.*;
 import java.io.*;
 

@@ -1,4 +1,4 @@
-package com.github.whym.ligtran;
+package org.whym.ligtran;
 
 public class EmptyMetrics extends AbstractMetrics {
   private static EmptyMetrics singleton = new EmptyMetrics();

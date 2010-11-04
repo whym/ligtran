@@ -6,7 +6,7 @@
 <web-app xmlns="http://java.sun.com/xml/ns/javaee" version="2.5">
     <servlet>
         <servlet-name>ligature</servlet-name>
-    <servlet-class>com.github.whym.ligtran.servlet.LigatureServlet</servlet-class>
+    <servlet-class>org.whym.ligtran.servlet.LigatureServlet</servlet-class>
     </servlet>
     <servlet-mapping>
         <servlet-name>ligature</servlet-name>
@@ -15,7 +15,7 @@
 
     <servlet>
       <servlet-name>ligature-rv</servlet-name>
-      <servlet-class>com.github.whym.ligtran.servlet.LigatureServlet</servlet-class>
+      <servlet-class>org.whym.ligtran.servlet.LigatureServlet</servlet-class>
       <init-param>
         <param-name>reverse</param-name>
         <param-value>true</param-value>
