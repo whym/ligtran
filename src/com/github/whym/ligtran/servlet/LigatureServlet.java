@@ -121,16 +121,27 @@ public class LigatureServlet extends HttpServlet {
     if ( str == null ) {
       str = "";
     }
+    String strk = Normalizer.normalize(str, Normalizer.Form.NFKC);
     str = Normalizer.normalize(str, Normalizer.Form.NFC);
     CharSequence buff = reverse(convert(reverse(str)));
+    if ( !strk.equals(str) ) {
+      CharSequence buff2 = reverse(convert(reverse(strk)));
+      if ( (!reversed && buff2.length() < buff.length()) ||
+           (reversed  && buff2.length() > buff.length()) ) {
+        buff = buff2;
+      }
+    }
     if ( !reversed ) {
       CharSequence buff2 = reverse(convert(reversedInstance.convert(reverse(str))));
       if ( buff2.length() < buff.length()) {
         buff = buff2;
       }
     }
+
+    // output
     String redirect = req.getParameter("redirect_to");
     if ( redirect != null ) {
+      // behaivior for bookmarklet
       redirect = String.format(redirect, java.net.URLEncoder.encode(buff.toString(), "UTF-8"));
       resp.setStatus(HttpServletResponse.SC_MOVED_PERMANENTLY);
       resp.setHeader("Location", redirect);

@@ -59,7 +59,7 @@
   </target>
 
   <target name="compile" depends="compile-core,compile-servlet,compile-test"
-          description="compile the sources"/>
+          description="compile the sources" />
 
   <target name="dist" depends="compile"
           description="generate the distribution">
