@@ -2,15 +2,18 @@ package org.whym.ligtran;
 import java.util.*;
 import java.io.*;
 import java.awt.Font;
+import java.util.logging.Logger;
 
 public class NeighbourFinder {
+  private static final Logger logger = Util.getLogger();
+
   BagOfVisualWords bags;
   Map<Set<Metrics>, Double> map;
   public NeighbourFinder(List<Metrics> from_, List<Metrics> to_, int g, double threshold, int cutoff, boolean tfidf, double oovweight, Iterated.Pair<Set<Metrics>, Double> it) {
     BagOfVisualWords bag = new BagOfVisualWords(from_, g, tfidf, cutoff, oovweight);
-    System.err.println(bag.getBags()[0].length);//!
+    logger.info("number of bags: " + bag.getBags()[0].length);//!
     bag.cutoff(cutoff);                         // TODO: different cutoff for freq and weighted score
-    System.err.println(bag.getBags()[0].length);//!
+    logger.info("after cutoff:   " + bag.getBags()[0].length);//!
     int[][] from = bag.getBags();
     int[][] to   = new int[to_.size()][];
     for ( int i = 0; i < to_.size(); ++i ) {
@@ -85,6 +88,7 @@ public class NeighbourFinder {
   }
 
   public static void main(String[] args) throws java.awt.FontFormatException, IOException {
+    logger.info(String.format("start"));
     int size = Util.getPropertyInt("size", 100);
     int grid = Util.getPropertyInt("grid", 4);
     int cutoff = Util.getPropertyInt("cutoff", 4);
@@ -103,7 +107,7 @@ public class NeighbourFinder {
     }
     List<Metrics> ls1 = readMetrics(new FileReader(args[0]), size, antialias, square, font, min, max1);
     List<Metrics> ls2 = readMetrics(new FileReader(args[1]), size, antialias, square, font, min, max2);
-    System.err.printf("%s: %d, %s: %d\n", args[0], ls1.size(), args[1], ls2.size());
+    logger.info(String.format("%s: %d, %s: %d\n", args[0], ls1.size(), args[1], ls2.size()));
     NeighbourFinder finder = new NeighbourFinder(ls1, ls2, grid, threshold, cutoff, tfidf, oov, new Iterated.Pair<Set<Metrics>, Double>() {
         public void execute(Set<Metrics> s, Double d) {
           if ( s.size() > 1 && d > 0 ) {//TODO: adhoc fix for d=0

@@ -1,6 +1,13 @@
 package org.whym.ligtran;
+import java.util.logging.*;
 
 public class Util {
+  private static final Logger logger = Logger.getLogger(Util.class.getPackage().getName());
+
+  public static Logger getLogger() {
+    return logger;
+  }
+
   public static String getProperty(String name, String v) {
     String s = System.getProperty(name);
     if ( s != null ) {
