@@ -14,25 +14,34 @@ public class NeighbourFinder {
     logger.info("number of bags: " + bag.getBags()[0].length);//!
     bag.cutoff(cutoff);                         // TODO: different cutoff for freq and weighted score
     logger.info("after cutoff:   " + bag.getBags()[0].length);//!
-    int[][] from = bag.getBags();
-    int[][] to   = new int[to_.size()][];
+    List<Pair<Integer,int[]>> from = convert(bag.getBags());
+    List<Pair<Integer,int[]>> to = new ArrayList<Pair<Integer,int[]>>();
     for ( int i = 0; i < to_.size(); ++i ) {
-      to[i] = bag.getBag(to_.get(i), g);
+      to.add(Pair.newInstance(i, bag.getBag(to_.get(i), g)));
     }
     this.map = new HashMap<Set<Metrics>, Double>();
-    for ( int j = 0; j < to.length; ++j ) {
-      for ( int i = 0; i < from.length; ++i ) {
-        double d = distance(from[i], to[j]);
-        if ( d < threshold ) {
-          Set<Metrics> s = new TreeSet<Metrics>();
-          s.add(from_.get(i));
-          s.add(to_.get(j));
-          it.execute(s, d);
-          this.map.put(s, d);
-        }
+    for ( Pair<Pair<Integer,int[]>,Pair<Integer,int[]>> p: new AllPairs<Pair<Integer,int[]>>(from, to) ) {
+      double d = distance(p.getFirst().getSecond(), p.getSecond().getSecond());
+      if ( d < threshold ) {
+        Set<Metrics> s = new TreeSet<Metrics>();
+        s.add(from_.get(p.getFirst().getFirst()));
+        s.add(to_.get(p.getSecond().getFirst()));
+        it.execute(s, d);
+        this.map.put(s, d);
       }
     }
   }
+
+  private static List<Pair<Integer,int[]>> convert(int[][] array) {
+    List<Pair<Integer,int[]>> ret = new ArrayList<Pair<Integer,int[]>>();
+    int i = 0;
+    for ( int[] a: array ) {
+      ret.add(Pair.newInstance(i, a));
+      ++i;
+    }
+    return ret;
+  }
+
   public List<Set<Metrics>> getMappings() {
     List<Set<Metrics>> ls = new ArrayList<Set<Metrics>>(this.map.keySet());
     Collections.sort(ls, new Comparator<Set<Metrics>>(){
