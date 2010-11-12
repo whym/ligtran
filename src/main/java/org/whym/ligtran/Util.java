@@ -1,5 +1,7 @@
 package org.whym.ligtran;
 import java.util.logging.*;
+import java.io.*;
+import java.util.*;
 
 public class Util {
   private static final Logger logger = Logger.getLogger(Util.class.getPackage().getName());
@@ -42,5 +44,45 @@ public class Util {
     } else {
       return v;
     }
+  }
+
+  public static boolean loadProperties() {
+    try {
+      return loadProperties(Util.class)
+        || loadProperties(new FileInputStream(new File(Util.class.getPackage().getName() + ".properties")));
+    } catch ( IOException e ) {
+      e.printStackTrace();
+    }
+    return false;
+  }
+
+  public static <T> boolean loadProperties(Class<T> cls) {
+    try {
+      String name = cls.getName().replace('.','/') + ".properties";
+      InputStream is = cls.getClassLoader().getResourceAsStream(name);
+      if ( is == null ) {
+        logger.warning(name + " not found");
+        return false;
+      } else {
+        logger.info("loading Properies: " + name);
+        loadProperties(is);
+        return true;
+      }
+    } catch (IOException e) {
+      if (getProperty("verbose", null) != null) {
+        e.printStackTrace();
+      }
+    }
+    return false;
+  }
+
+  private static boolean loadProperties(InputStream is) throws IOException {
+    Properties prop = new Properties();
+    prop.load(new InputStreamReader(is));
+    for (Map.Entry<Object,Object> ent: prop.entrySet()) {
+      if ( getProperty(ent.getKey().toString(), null) == null )
+        System.setProperty(ent.getKey().toString(), ent.getValue().toString());
+    }
+    return true;
   }
 }

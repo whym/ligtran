@@ -31,4 +31,12 @@ public abstract class AbstractByteable implements Byteable, Comparable<Byteable>
       return false;
     }
   }
+  @Override public String toString() {
+    StringBuffer buff = new StringBuffer();
+    for ( byte b: this.getBytes() ) {
+      buff.append(String.format("%02X,", b));
+    }
+      buff.deleteCharAt(buff.length() - 1);
+      return buff.toString();
+  }
 }

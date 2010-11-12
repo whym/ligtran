@@ -7,39 +7,125 @@ import java.util.logging.Logger;
 public class NeighbourFinder {
   private static final Logger logger = Util.getLogger();
 
-  BagOfVisualWords bags;
-  Map<Set<Metrics>, Double> map;
-  public NeighbourFinder(List<Metrics> from_, List<Metrics> to_, int g, double threshold, int cutoff, boolean tfidf, double oovweight, Iterated<Pair<Set<Metrics>, Double>> it) {
-    BagOfVisualWords bag = new BagOfVisualWords(from_, g, tfidf, cutoff, oovweight);
-    logger.info("number of bags: " + bag.getBags()[0].length);//!
-    bag.cutoff(cutoff);                         // TODO: different cutoff for freq and weighted score
-    logger.info("after cutoff:   " + bag.getBags()[0].length);//!
-    List<Pair<Integer,int[]>> from = convert(bag.getBags());
-    List<Pair<Integer,int[]>> to = new ArrayList<Pair<Integer,int[]>>();
-    for ( int i = 0; i < to_.size(); ++i ) {
-      to.add(Pair.newInstance(i, bag.getBag(to_.get(i), g)));
-    }
-    this.map = new HashMap<Set<Metrics>, Double>();
-    for ( Pair<Pair<Integer,int[]>,Pair<Integer,int[]>> p: new AllPairs<Pair<Integer,int[]>>(from, to) ) {
-      double d = distance(p.getFirst().getSecond(), p.getSecond().getSecond());
-      if ( d < threshold ) {
-        Set<Metrics> s = new TreeSet<Metrics>();
-        s.add(from_.get(p.getFirst().getFirst()));
-        s.add(to_.get(p.getSecond().getFirst()));
-        it.execute(Pair.newInstance(s, d));
-        this.map.put(s, d);
+  public static class Item extends AbstractByteable {
+    
+    public static byte[] int2word(int[]src, int intsize, int wordsize) {
+      int srcLength = src.length;
+      byte[]dst = new byte[srcLength * (intsize / wordsize)];
+      int mask = (1 << wordsize) - 1;
+      for (int i=0; i < srcLength; ++i) {
+        int x = src[i];
+        int n = i * (intsize / wordsize);
+        int j;
+        for ( j = 0; j < (intsize / wordsize); ++j ) {
+          dst[n + j] = (byte) ((x >>> (j * wordsize)) & mask);
+        }
       }
+      return dst;
+    }
+    public final Metrics metrics;
+    public final int[] vector;
+    public final byte[] bytes;
+    public Item(Metrics met, int[] a, int intsize, int wordsize) {
+      this.metrics = met;
+      this.vector = a;
+      this.bytes = int2word(a, intsize, wordsize);
+    }
+    public Item(Metrics met, int[] a) {
+      this(met, a, 16, 2);
+    }
+    public byte[] getBytes() {
+      return bytes;
     }
   }
 
-  private static List<Pair<Integer,int[]>> convert(int[][] array) {
-    List<Pair<Integer,int[]>> ret = new ArrayList<Pair<Integer,int[]>>();
-    int i = 0;
-    for ( int[] a: array ) {
-      ret.add(Pair.newInstance(i, a));
-      ++i;
+  public static class Param {
+    public static enum Mode {
+      ALL_PAIRS, SKETCHSORTED_PAIRS
     }
-    return ret;
+    public final int gridSize;
+    public final double threshold;
+    public final int bogCutOff;
+    public final double bogOOVWeight;
+    public final Mode pairs;
+    public final boolean bogTfidf;
+    public final int intSize;
+    public final int wordSize;
+    public final int blockSize;
+    public final int error;
+    public Param(int gridsize, double threshold, int cutoff, boolean tfidf, double oov, String mode) {
+      this(gridsize, threshold, cutoff, tfidf, oov, mode, 32, 4, 2, 20);
+    }
+    public Param(int gridsize, double threshold, int cutoff, boolean tfidf, double oov, String mode, int intsize, int wordsize, int blocksize, int error) {
+      this.gridSize = gridsize;
+      this.threshold = threshold;
+      this.bogCutOff = cutoff;
+      this.bogOOVWeight = oov;
+      this.pairs = Mode.valueOf(mode);
+      this.intSize = intsize;
+      this.wordSize = wordsize;
+      this.error = error;
+      this.bogTfidf = tfidf;
+      this.blockSize = blocksize;
+    }
+    @Override public String toString() {
+      return
+        "grid: " + gridSize + ", " +
+        "threshold: " + threshold + ", " +
+        "cutoff: " + bogCutOff + ", " +
+        "oovweight: " + bogOOVWeight + ", " +
+        "paris: " + pairs + ", " +
+        "tfidf: " + bogTfidf + ", " +
+        "intsize: " + intSize + ", " +
+        "wordsize: " + wordSize + ", " +
+        "error: " + error
+        ;
+    }
+  }
+
+  BagOfVisualWords bags;
+  Map<Set<Metrics>, Double> map;
+  public NeighbourFinder(List<Metrics> from_, List<Metrics> to_, Param param, Iterated<Pair<Set<Metrics>, Double>> it) {
+    logger.info("param: " + param);
+    BagOfVisualWords bag = new BagOfVisualWords(from_, param.gridSize, param.bogTfidf, param.bogCutOff, param.bogOOVWeight);
+    logger.info("number of bags: " + bag.getBags()[0].length);//!
+    bag.cutoff(param.bogCutOff);                         // TODO: different cutoff for freq and weighted score
+    logger.info("after cutoff:   " + bag.getBags()[0].length);//!
+    List<Item> from = new ArrayList<Item>();
+    Set<Metrics> fromset = new HashSet<Metrics>();
+    {
+      int i = 0;
+      for ( int[] a: bag.getBags() ) {
+        from.add(new Item(from_.get(i), a));
+        fromset.add(from_.get(i));
+        ++i;
+      }
+    }
+    List<Item> to = new ArrayList<Item>();
+    Set<Metrics> toset = new HashSet<Metrics>();
+    for ( Metrics x: to_ ) {
+      to.add(new Item(x, bag.getBag(x, param.gridSize)));
+      toset.add(x);
+    }
+    logger.info("feature vector size:   " + to.get(0).getBytes().length);//!
+    logger.info("feature vector:   " + to.get(0));//!
+    this.map = new HashMap<Set<Metrics>, Double>();
+    for ( Pair<Item,Item> p: Param.Mode.ALL_PAIRS.equals(param.pairs)
+            ? new AllPairs<Item>(from, to)
+            : new SketchSortedPairs<Item>(from, to, param.blockSize, param.error) ) {
+      //for ( Pair<Item,Item> p: new AllPairs<Item>(from, to) ) {
+      double d = distance(p.getFirst().vector, p.getSecond().vector);
+      if ( d < param.threshold ) {
+        Set<Metrics> s = new TreeSet<Metrics>();
+        if ( fromset.contains(p.getFirst().metrics) && toset.contains(p.getSecond().metrics)  ||
+             toset.contains(p.getFirst().metrics) && fromset.contains(p.getSecond().metrics) ) {
+          s.add(p.getFirst().metrics);
+          s.add(p.getSecond().metrics);
+          it.execute(Pair.newInstance(s, d));
+          this.map.put(s, d);
+        }
+      }
+    }
   }
 
   public List<Set<Metrics>> getMappings() {
@@ -98,6 +184,7 @@ public class NeighbourFinder {
 
   public static void main(String[] args) throws java.awt.FontFormatException, IOException {
     logger.info(String.format("start"));
+    Util.loadProperties();
     int size = Util.getPropertyInt("size", 100);
     int grid = Util.getPropertyInt("grid", 4);
     int cutoff = Util.getPropertyInt("cutoff", 4);
@@ -111,13 +198,21 @@ public class NeighbourFinder {
     boolean tfidf = Util.getPropertyBoolean("tfidf", true);
     Font font = new Font("serif", Font.PLAIN, size);
     String fpath = Util.getProperty("font", null);
+    String mode = Util.getProperty("pairs", "ALL_PAIRS");
+    int intsize = Util.getPropertyInt("intsize", 16);
+    int wordsize = Util.getPropertyInt("wordsize", 2);
+    int blocksize = Util.getPropertyInt("blocksize", 4);
+    int error = Util.getPropertyInt("error", 200);
     if ( fpath != null ) {
       font = Font.createFont(Font.TRUETYPE_FONT, new FileInputStream(fpath));
     }
     List<Metrics> ls1 = readMetrics(new FileReader(args[0]), size, antialias, square, font, min, max1);
     List<Metrics> ls2 = readMetrics(new FileReader(args[1]), size, antialias, square, font, min, max2);
     logger.info(String.format("%s: %d, %s: %d\n", args[0], ls1.size(), args[1], ls2.size()));
-    NeighbourFinder finder = new NeighbourFinder(ls1, ls2, grid, threshold, cutoff, tfidf, oov, new Iterated<Pair<Set<Metrics>, Double>>() {
+    NeighbourFinder finder = new NeighbourFinder
+      (ls1, ls2,
+       new NeighbourFinder.Param(grid, threshold, cutoff, tfidf, oov, mode, intsize, wordsize, blocksize, error),
+       new Iterated<Pair<Set<Metrics>, Double>>() {
         public void execute(Pair<Set<Metrics>, Double> p) {
           Set<Metrics> s = p.getFirst();
           double d = p.getSecond();
