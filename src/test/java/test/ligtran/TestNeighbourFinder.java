@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 
 public class TestNeighbourFinder {
   @Test public void testItem() {
-    NeighbourFinder.Item item = new NeighbourFinder.Item(EmptyMetrics.getInstance(), new int[]{7, 9}, 8, 2);
+    NeighbourFinder.Item item = new NeighbourFinder.Item(EmptyMetrics.getInstance(), new int[]{7, 9}, new FixedSizeByteableFactory(8, 2));
     System.err.println(item);//!
     assertArrayEquals(new byte[]{
         3, 1, 0, 0,

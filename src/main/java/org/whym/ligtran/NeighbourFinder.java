@@ -9,33 +9,16 @@ public class NeighbourFinder {
 
   public static class Item extends AbstractByteable {
     
-    public static byte[] int2word(int[]src, int intsize, int wordsize) {
-      int srcLength = src.length;
-      byte[]dst = new byte[srcLength * (intsize / wordsize)];
-      int mask = (1 << wordsize) - 1;
-      for (int i=0; i < srcLength; ++i) {
-        int x = src[i];
-        int n = i * (intsize / wordsize);
-        int j;
-        for ( j = 0; j < (intsize / wordsize); ++j ) {
-          dst[n + j] = (byte) ((x >>> (j * wordsize)) & mask);
-        }
-      }
-      return dst;
-    }
     public final Metrics metrics;
     public final int[] vector;
-    public final byte[] bytes;
-    public Item(Metrics met, int[] a, int intsize, int wordsize) {
+    public final Byteable bytes;
+    public Item(Metrics met, int[] a, ByteableFactory facto) {
       this.metrics = met;
       this.vector = a;
-      this.bytes = int2word(a, intsize, wordsize);
-    }
-    public Item(Metrics met, int[] a) {
-      this(met, a, 16, 2);
+      this.bytes = facto.getByteable(a);
     }
     public byte[] getBytes() {
-      return bytes;
+      return bytes.getBytes();
     }
   }
 
@@ -50,23 +33,29 @@ public class NeighbourFinder {
     public final Mode pairs;
     public final boolean bogTfidf;
     public final int intSize;
-    public final int wordSize;
     public final int blockSize;
     public final int error;
+    public final int bits;
+    public final boolean approximate;
+    public final int seed;
+    public final int center;
     public Param(int gridsize, double threshold, int cutoff, boolean tfidf, double oov, String mode) {
-      this(gridsize, threshold, cutoff, tfidf, oov, mode, 32, 4, 2, 20);
+      this(gridsize, threshold, cutoff, tfidf, oov, mode, 32, 32, false, 0, 0, 2, 20);
     }
-    public Param(int gridsize, double threshold, int cutoff, boolean tfidf, double oov, String mode, int intsize, int wordsize, int blocksize, int error) {
+    public Param(int gridsize, double threshold, int cutoff, boolean tfidf, double oov, String mode, int intsize, int bits,  boolean approximate, int seed, int center, int blocksize, int error) {
       this.gridSize = gridsize;
       this.threshold = threshold;
       this.bogCutOff = cutoff;
       this.bogOOVWeight = oov;
       this.pairs = Mode.valueOf(mode);
       this.intSize = intsize;
-      this.wordSize = wordsize;
+      this.bits = bits;
       this.error = error;
       this.bogTfidf = tfidf;
       this.blockSize = blocksize;
+      this.seed = seed;
+      this.approximate = approximate;
+      this.center = center;
     }
     @Override public String toString() {
       return
@@ -74,10 +63,13 @@ public class NeighbourFinder {
         "threshold: " + threshold + ", " +
         "cutoff: " + bogCutOff + ", " +
         "oovweight: " + bogOOVWeight + ", " +
-        "paris: " + pairs + ", " +
+        "pairs: " + pairs + ", " +
         "tfidf: " + bogTfidf + ", " +
         "intsize: " + intSize + ", " +
-        "wordsize: " + wordSize + ", " +
+        "approximate: " + approximate + ", " +
+        "bits: " + bits + ", " +
+        "seed: " + seed + ", " +
+        "center: " + center + ", " +
         "error: " + error
         ;
     }
@@ -91,12 +83,21 @@ public class NeighbourFinder {
     logger.info("number of bags: " + bag.getBags()[0].length);//!
     bag.cutoff(param.bogCutOff);                         // TODO: different cutoff for freq and weighted score
     logger.info("after cutoff:   " + bag.getBags()[0].length);//!
+    int dim = bag.getBags()[0].length;
+
+    ByteableFactory facto;
+    if ( param.approximate ) {
+      facto = new ApproximateByteableFactory(dim, param.bits, new Random(param.seed), param.center);
+    } else {
+      facto = new FixedSizeByteableFactory(param.intSize, param.bits / dim);
+    }
+
     List<Item> from = new ArrayList<Item>();
     Set<Metrics> fromset = new HashSet<Metrics>();
     {
       int i = 0;
       for ( int[] a: bag.getBags() ) {
-        from.add(new Item(from_.get(i), a));
+        from.add(new Item(from_.get(i), a, facto));
         fromset.add(from_.get(i));
         ++i;
       }
@@ -104,7 +105,7 @@ public class NeighbourFinder {
     List<Item> to = new ArrayList<Item>();
     Set<Metrics> toset = new HashSet<Metrics>();
     for ( Metrics x: to_ ) {
-      to.add(new Item(x, bag.getBag(x, param.gridSize)));
+      to.add(new Item(x, bag.getBag(x, param.gridSize), facto));
       toset.add(x);
     }
     logger.info("feature vector size:   " + to.get(0).getBytes().length);//!
@@ -200,7 +201,10 @@ public class NeighbourFinder {
     String fpath = Util.getProperty("font", null);
     String mode = Util.getProperty("pairs", "ALL_PAIRS");
     int intsize = Util.getPropertyInt("intsize", 16);
-    int wordsize = Util.getPropertyInt("wordsize", 2);
+    int bits = Util.getPropertyInt("bits", 32);
+    boolean approx = Util.getPropertyBoolean("approx", false);
+    int seed = Util.getPropertyInt("seed", 2);
+    int center = Util.getPropertyInt("center", 1);
     int blocksize = Util.getPropertyInt("blocksize", 4);
     int error = Util.getPropertyInt("error", 200);
     if ( fpath != null ) {
@@ -211,7 +215,7 @@ public class NeighbourFinder {
     logger.info(String.format("%s: %d, %s: %d\n", args[0], ls1.size(), args[1], ls2.size()));
     NeighbourFinder finder = new NeighbourFinder
       (ls1, ls2,
-       new NeighbourFinder.Param(grid, threshold, cutoff, tfidf, oov, mode, intsize, wordsize, blocksize, error),
+       new NeighbourFinder.Param(grid, threshold, cutoff, tfidf, oov, mode, intsize, bits, approx, seed, center, blocksize, error),
        new Iterated<Pair<Set<Metrics>, Double>>() {
         public void execute(Pair<Set<Metrics>, Double> p) {
           Set<Metrics> s = p.getFirst();

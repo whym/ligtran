@@ -221,7 +221,7 @@ public class SketchSortedPairs<T extends Byteable & Comparable<? extends Byteabl
       sum += dist;
       ++n;
     }
-    System.out.printf("%s\t%.3f\t%d\t%d\n", pairs.getClass().getName(), (double)sum/n, sum, n);
+    System.out.printf("%s\t%.3f\t%d/%d\n", pairs.getClass().getName(), (double)sum/n, sum, n);
   }
 
   public static void main(String[] args) throws NumberFormatException {
@@ -236,9 +236,13 @@ public class SketchSortedPairs<T extends Byteable & Comparable<? extends Byteabl
     Random rand = new Random(srand);
     List<AbstractByteable> ls1 = generateItems(rand, num, dim, min, max);
     List<AbstractByteable> ls2 = generateItems(rand, num, dim, min, max);
-    SketchSortedPairs<AbstractByteable> spairs = new SketchSortedPairs<AbstractByteable>(ls1, ls2, block, error);
-    AllPairs<AbstractByteable> apairs = new AllPairs<AbstractByteable>(ls1, ls2);
-    evaluate(spairs);
-    evaluate(apairs);
+    if ( Util.getPropertyBoolean("sketch", false) ) {
+      SketchSortedPairs<AbstractByteable> spairs = new SketchSortedPairs<AbstractByteable>(ls1, ls2, block, error);
+      evaluate(spairs);
+    }
+    if ( Util.getPropertyBoolean("all", false) ) {
+      AllPairs<AbstractByteable> apairs = new AllPairs<AbstractByteable>(ls1, ls2);
+      evaluate(apairs);
+    }
   }
 }
