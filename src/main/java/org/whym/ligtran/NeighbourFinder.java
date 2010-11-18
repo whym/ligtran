@@ -113,7 +113,7 @@ public class NeighbourFinder {
     this.map = new HashMap<Set<Metrics>, Double>();
     for ( Pair<Item,Item> p: Param.Mode.ALL_PAIRS.equals(param.pairs)
             ? new AllPairs<Item>(from, to)
-            : new SketchSortedPairs<Item>(from, to, param.blockSize, param.error) ) {
+            : new SketchSortedPairs<Item>(from, to, param.blockSize, param.error, param.approximate? 2: param.bits / dim) ) {
       //for ( Pair<Item,Item> p: new AllPairs<Item>(from, to) ) {
       double d = distance(p.getFirst().vector, p.getSecond().vector);
       if ( d < param.threshold ) {

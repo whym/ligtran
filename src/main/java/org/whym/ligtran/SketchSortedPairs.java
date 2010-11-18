@@ -16,11 +16,11 @@ public class SketchSortedPairs<T extends Byteable & Comparable<? extends Byteabl
     List<List<Integer>> array;
     List<List<Integer>> result;
     LinkedList<Pair<List<Integer>, Integer>> candidates;
-    public BucketArray(int capacity) {
+    public BucketArray(int capacity, int bucketnum) {
       this.array = new ArrayList<List<Integer>>();
       this.result = new ArrayList<List<Integer>>();
       this.candidates = new LinkedList<Pair<List<Integer>,Integer>>();
-      for ( int i = 0; i < 256; ++i ) {
+      for ( int i = 0; i < bucketnum; ++i ) {
         this.array.add(new ArrayList<Integer>(capacity));
       }
     }
@@ -38,7 +38,10 @@ public class SketchSortedPairs<T extends Byteable & Comparable<? extends Byteabl
         }
         // classify with radix
         for ( Integer x: indices ) {
-          int radix = (body.get(x).getBytes()[b]) + 128;
+          int radix = body.get(x).getBytes()[b];
+          if ( radix < 0 ) {
+            radix &= 0xFF;
+          }
           this.array.get(radix).add(x);
         }
         // reorder indices
@@ -74,12 +77,15 @@ public class SketchSortedPairs<T extends Byteable & Comparable<? extends Byteabl
   }
 
   public SketchSortedPairs(List<T> x, List<T> y, int blockSize, int error) {
+    this(x, y, blockSize, error, 256);
+  }
+  public SketchSortedPairs(List<T> x, List<T> y, int blockSize, int error, int maxvalue) {
     this.blockSize = blockSize;
     this.error = error;
     this.body = new ArrayList<T>(x);
     this.body.addAll(y);
     this.result = new ArrayList<Pair<T,T>>();
-    this.buckets = new BucketArray(this.body.size());
+    this.buckets = new BucketArray(this.body.size(), maxvalue);
     this.currentClassification = new ArrayList<Pair<Integer,Integer>>();
     this.dim = this.body.get(0).getBytes().length;
     if ( this.body.size() > 0 ) {
@@ -128,7 +134,7 @@ public class SketchSortedPairs<T extends Byteable & Comparable<? extends Byteabl
       }
     } else {
       int min = masks.size() > 0 ? masks.get(masks.size() - 1) + 1: 0;
-      int max = Math.min(this.error + masks.size(), this.dim / blockSize);
+      int max = Math.min(this.error + masks.size(), this.dim / this.blockSize);
       for ( int b = min; b <= max; ++b ) {
         for ( List<Integer> x: this.classify(targets, b) ) {
           if ( x.size() >= 2 ) {
@@ -159,12 +165,12 @@ public class SketchSortedPairs<T extends Byteable & Comparable<? extends Byteabl
   }
 
   protected Iterable<List<Integer>> classify(List<Integer> indices, final int b) {
-    final int min = b * blockSize;
-    final int max = min + blockSize;
+    final int min = b * this.blockSize;
+    final int max = min + this.blockSize;
     if ( min >= max ) {
       return new ArrayList<List<Integer>>();
     }
-    if ( indices.size() < this.body.size() ) {
+    if ( indices.size() < this.dim ) {
       Comparator<Integer> comp = getMaskedComparator(min, max);
       Collections.sort(indices, comp);
       List<List<Integer>> ret = new ArrayList<List<Integer>>();
@@ -176,7 +182,7 @@ public class SketchSortedPairs<T extends Byteable & Comparable<? extends Byteabl
         } else {
           if ( cur.size() >= 2 ) {
         	  ret.add(new ArrayList<Integer>(cur));
-          	}
+          }
           cur.clear();
           cur.add(indices.get(i));
         }
