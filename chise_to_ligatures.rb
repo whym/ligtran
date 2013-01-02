@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 # -*- coding: utf-8 -*-
 require 'open-uri'
-urls = ['http://cvs.m17n.org/viewcvs/chise/ids/IDS-UCS-Basic.txt?content-type=text%2Fplain&revision=HEAD']
+urls = ['http://git.chise.org/gitweb/?p=chise/ids.git;a=blob_plain;f=IDS-UCS-Basic.txt;hb=HEAD']
 ligatures = {}
 tx = {
   "\u2E85" => 'イ',

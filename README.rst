@@ -69,15 +69,17 @@ Maven を使うやり方と Ant+Ivy を使うやり方とがあります。
 Maven
 ---------
 
-1. mvn package
-2. target/ligtran-*/ と target/ligtran-*.war ができ、これを servelet が動く場所に置けば動きます。
+1. src/main/resources/ligatures.txt を作ります（chise_to_ligatures.rb）
+2. mvn package
+3. target/ligtran-*/ と target/ligtran-*.war ができ、これを servelet が動く場所に置けば動きます。
 
 Ant+Ivy
 ---------
 
-1. Apache Ivy をインストールし、CLASSPATH を通します。
-2. ant test && ant war
-3. war ディレクトリができ、これを servelet が動く場所に置けば動きます。
+1. src/main/resources/ligatures.txt を作ります（chise_to_ligatures.rb）
+2. Apache Ivy をインストールし、CLASSPATH を通します。
+3. ant test && ant war
+4. war ディレクトリができ、これを servelet が動く場所に置けば動きます。
 
 Credits
 ================================
