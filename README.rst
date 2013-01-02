@@ -60,6 +60,25 @@ JSON形式でのAPIもあります。
   （言十）がかえってきます。
 
 
+How to build
+================================
+※ 主に自分用の備忘録目的なので、やや省略して書いています。
+
+Maven を使うやり方と Ant+Ivy を使うやり方とがあります。
+
+Maven
+---------
+
+1. mvn package
+2. target/ligtran-*/ と target/ligtran-*.war ができ、これを servelet が動く場所に置けば動きます。
+
+Ant+Ivy
+---------
+
+1. Apache Ivy をインストールし、CLASSPATH を通します。
+2. ant test && ant war
+3. war ディレクトリができ、これを servelet が動く場所に置けば動きます。
+
 Credits
 ================================
 Logo:
