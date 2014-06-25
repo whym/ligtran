@@ -3,4 +3,9 @@
     <application>ligtran</application>
     <version>3-develop</version>
     <threadsafe>true</threadsafe>
+    <static-files>
+      <include path="/*.js"/>
+      <include path="/*.png"/>
+      <include path="/*.gif"/>
+    </static-files>
 </appengine-web-app>
