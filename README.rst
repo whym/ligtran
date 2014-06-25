@@ -6,7 +6,7 @@ ligtran
 ---------------------------------------------------------------------------------------------
 
  :Homepage: http://ligtran.appspot.com
- :Contact:  http://twitter.com/whym
+ :Contact:  https://twitter.com/whym
 
 このウェブサイトについて
 ============================
