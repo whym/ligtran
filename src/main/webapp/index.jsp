@@ -30,7 +30,7 @@
 <link rel="INDEX" href="." />
 <title>ligtran<%= str.equals("") ? "": " - " + snippet%></title>
 
-<script type="text/javascript" src="http://www.mochikit.com/packed/MochiKit/MochiKit.js"></script>
+<script type="text/javascript" src="http://mochi.github.io/mochikit/MochiKit/MochiKit.js"></script>
 <script type="text/javascript">
 function get_time() {
   return new Date().getTime();
